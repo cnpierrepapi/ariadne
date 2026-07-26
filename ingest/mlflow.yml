@@ -1,0 +1,19 @@
+# Training runs, registered models and the tables they were trained on.
+#
+# `materialize_dataset_inputs` is what turns a logged dataset input into a real
+# upstream edge, and `source_mapping_to_platform` tells DataHub that a dataset whose
+# source type is "postgres" belongs to the postgres platform. Together they make the
+# model's training table the SAME entity the warehouse already published, rather
+# than a second copy of it that happens to share a name.
+source:
+  type: mlflow
+  config:
+    tracking_uri: http://localhost:5000
+    materialize_dataset_inputs: true
+    source_mapping_to_platform:
+      postgres: postgres
+
+sink:
+  type: datahub-rest
+  config:
+    server: http://localhost:8080

@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: dim_person
+    description: >
+      One row per surveyed person with household and geography resolved. Carries the
+      personal and protected attributes the survey collects. Legitimate for analysis,
+      governed on the way downstream.
+    columns:
+      - name: person_id
+        description: Household serial number and person number, unique per surveyed person.
+        tests: [unique, not_null]
+      - name: age
+        description: Age in years at time of survey. A protected basis under ECOA.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ECOA
+      - name: education_level_code
+        description: Highest level of education attained, PUMS SCHL coding.
+      - name: occupation_code
+        description: Occupation, PUMS OCCP coding.
+      - name: hours_worked_per_week
+        description: Usual hours worked per week over the past 12 months.
+      - name: personal_income_usd
+        description: Total personal income over the past 12 months in US dollars.
+      - name: household_income_usd
+        description: Total household income over the past 12 months in US dollars.
+      - name: marital_status_code
+        description: Marital status, PUMS MAR coding. A protected basis under ECOA.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ECOA
+      - name: sex_code
+        description: Sex as recorded by the survey. A protected basis under ECOA.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ECOA
+      - name: race_code
+        description: >
+          Recoded detailed race, PUMS RAC1P coding. A prohibited basis for credit and
+          lending decisions under ECOA, and a protected characteristic under the Fair
+          Housing Act.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ECOA
+      - name: place_of_birth_code
+        description: Place of birth. A proxy for national origin, which is a protected basis.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ECOA
+      - name: citizenship_code
+        description: Citizenship status. A proxy for national origin.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ECOA
+      - name: nativity_code
+        description: Native or foreign born. A proxy for national origin.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+      - name: disability_code
+        description: Disability status. A protected characteristic under the ADA.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+          legal_basis: ADA
+      - name: ancestry_code
+        description: Reported ancestry. A proxy for national origin and ethnicity.
+        tags: ["personal_data", "protected_attribute"]
+        meta:
+          classification: protected
+      - name: state_name
+        description: State of residence.
+      - name: census_region
+        description: Census region the state belongs to.
+      - name: puma_code
+        description: >
+          Public Use Microdata Area. A geographic unit of roughly 100,000 people, fine
+          enough to act as a proxy for demographics.
+        tags: ["personal_data"]
+        meta:
+          classification: personal
+
+  - name: income_features
+    description: >
+      Feature table for the income classifier. Modelled on the canonical ACSIncome
+      task with the protected attributes removed. Nothing enforces their absence
+      except whoever last edited the model file.
+    columns:
+      - name: person_id
+        description: Grain of the feature table, one row per person.
+        tests: [unique, not_null]
+      - name: age
+        description: Age in years. Carried from dim_person.
+        tags: ["personal_data", "protected_attribute"]
+      - name: class_of_worker_code
+        description: Class of worker, PUMS COW coding.
+      - name: education_level_code
+        description: Highest level of education attained.
+      - name: marital_status_code
+        description: Marital status, PUMS MAR coding.
+        tags: ["personal_data", "protected_attribute"]
+      - name: occupation_code
+        description: Occupation, PUMS OCCP coding.
+      - name: hours_worked_per_week
+        description: Usual hours worked per week.
+      - name: household_size
+        description: Number of people in the household.
+      - name: household_income_usd
+        description: Total household income in US dollars.
+      - name: tenure_code
+        description: Whether the home is owned or rented.
+      - name: census_region
+        description: Census region of residence.
+      - name: income_above_50k
+        description: Label. One when personal income exceeds fifty thousand US dollars.

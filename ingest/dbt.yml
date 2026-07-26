@@ -1,0 +1,18 @@
+# The transformation layer. This is what carries column level lineage from raw
+# census columns through staging into the feature table, and it carries the
+# governance tags declared in schema.yml with it.
+source:
+  type: dbt
+  config:
+    manifest_path: /home/ec2-user/ariadne/warehouse/target/manifest.json
+    catalog_path: /home/ec2-user/ariadne/warehouse/target/catalog.json
+    target_platform: postgres
+    include_column_lineage: true
+    infer_dbt_schemas: true
+    entities_enabled:
+      test_results: "NO"
+
+sink:
+  type: datahub-rest
+  config:
+    server: http://localhost:8080

@@ -1,0 +1,10 @@
+v/
+.venv/
+__pycache__/
+*.pyc
+.acs-cache/
+mlflow-store/
+warehouse/target/
+warehouse/logs/
+warehouse/dbt_packages/
+.env

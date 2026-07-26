@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: census_raw
+    description: >
+      Raw American Community Survey Public Use Microdata Sample records, landed
+      from the US Census Bureau exactly as published. Person and household records
+      arrive separately and join on the household serial number.
+    database: warehouse
+    schema: public
+    tables:
+      - name: raw_person
+        description: One row per surveyed person, keyed by household serial number and person number.
+      - name: raw_household
+        description: One row per surveyed household.
+      - name: raw_geography
+        description: FIPS state codes to state names and census regions.

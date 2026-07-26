@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_person
+    description: Census person records, renamed for analysts. One row per surveyed person.
+    columns:
+      - name: person_id
+        description: Household serial number and person number.
+      - name: sex_code
+        description: Sex as recorded by the survey.
+        tags: ["personal_data", "protected_attribute"]
+      - name: race_code
+        description: Recoded detailed race, PUMS RAC1P coding. A prohibited basis under ECOA.
+        tags: ["personal_data", "protected_attribute"]
+      - name: place_of_birth_code
+        description: Place of birth, a proxy for national origin.
+        tags: ["personal_data", "protected_attribute"]
+      - name: disability_code
+        description: Disability status.
+        tags: ["personal_data", "protected_attribute"]
+      - name: age
+        description: Age in years at time of survey.
+        tags: ["personal_data", "protected_attribute"]
+
+  - name: stg_household
+    description: Census household records, one row per household.
+
+  - name: stg_geography
+    description: State reference dimension, FIPS code to name and census region.

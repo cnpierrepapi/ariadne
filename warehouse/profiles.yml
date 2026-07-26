@@ -1,0 +1,12 @@
+ariadne:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5433
+      user: ariadne
+      password: ariadne
+      dbname: warehouse
+      schema: analytics
+      threads: 4

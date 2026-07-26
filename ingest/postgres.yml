@@ -1,0 +1,20 @@
+# The warehouse itself. Raw census tables plus everything dbt builds on top of them.
+source:
+  type: postgres
+  config:
+    host_port: localhost:5433
+    database: warehouse
+    username: ariadne
+    password: ariadne
+    schema_pattern:
+      allow:
+        - "public"
+        - "analytics_staging"
+        - "analytics_marts"
+    profiling:
+      enabled: false
+
+sink:
+  type: datahub-rest
+  config:
+    server: http://localhost:8080
