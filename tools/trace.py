@@ -45,8 +45,18 @@ import sys
 from functools import lru_cache
 
 from graph import UPSTREAM, find, gql, walk
+from policy import Policy
+from policy import load as load_policy
 
-PROTECTED = "protected_attribute"
+_POLICY: Policy | None = None
+
+
+def policy(regime: str | None = None) -> Policy:
+    """The regime in force. Loaded once, since the checks all share it."""
+    global _POLICY
+    if _POLICY is None or regime is not None:
+        _POLICY = load_policy(regime)
+    return _POLICY
 
 _FINE = """
 query($urn: String!) {
@@ -221,27 +231,60 @@ def training_datasets(model_urn: str) -> list[str]:
     return names
 
 
-def protected_reaching(name: str) -> list[dict]:
-    """Protected columns that actually reach a column of this table.
+def _describe(pol: Policy, column: str, applied: frozenset[str]) -> dict:
+    """What the regime in force says about a column, if it says anything.
+
+    A column can be in scope because the regime declares the attribute it holds,
+    or only because it carries a tag the regime watches. The second case is not
+    weaker, it is how a proxy gets caught: a neighbourhood identifier is tagged as
+    personal data and named by no statute, and under a regime that asks for
+    examination rather than listing forbidden columns it still has to be looked at.
+    """
+    spec = pol.by_column().get(column)
+    if spec:
+        return {
+            "attribute": spec["attribute"],
+            "basis": spec["basis"],
+            "citation": spec.get("citation", pol.citation),
+        }
+    return {
+        "attribute": None,
+        "basis": "examine",
+        "citation": pol.citation,
+        "why": f"in scope because it carries {', '.join(sorted(applied))}, "
+               f"and {pol.name} watches that tag",
+    }
+
+
+def protected_reaching(name: str, regime: str | None = None) -> list[dict]:
+    """Restricted columns that actually reach a column of this table.
 
     Reaching is the whole question. Every table downstream of dim_person has nine
     protected attributes somewhere in its history. Only some of them select one.
+
+    What counts as restricted comes from the regime, not from this file. ECOA
+    watches columns tagged as protected attributes. The EU AI Act asks for
+    examination of biases affecting fundamental rights, so it watches personal data
+    too, and the same warehouse yields more findings under it without a line here
+    changing.
     """
+    pol = policy(regime)
     findings: list[dict] = []
     for column in columns(name):
         own = tags(name).get(column, frozenset())
-        if PROTECTED in own:
+        if pol.is_in_scope(own):
             findings.append({
                 "column": column, "source": name, "source_column": column,
-                "hops": 0, "tags": sorted(own),
+                "hops": 0, "tags": sorted(own), **_describe(pol, column, own),
             })
             continue
         for (up_name, up_col), hop in sorted(ancestry(name, column).items(), key=lambda kv: kv[1]):
             inherited = tags(up_name).get(up_col, frozenset())
-            if PROTECTED in inherited:
+            if pol.is_in_scope(inherited):
                 findings.append({
                     "column": column, "source": up_name, "source_column": up_col,
                     "hops": hop, "tags": sorted(inherited),
+                    **_describe(pol, up_col, inherited),
                 })
                 break
     return findings

@@ -34,9 +34,11 @@ import json
 import sys
 
 from graph import find, gql
+from policy import ORDER
+from policy import load as load_policy
 from trace import columns, entities, protected_reaching, training_datasets
 
-INVARIANT = "protected attribute reaches a deployed model"
+INVARIANT = "restricted attribute reaches a deployed model"
 
 # registry stages that mean something is serving. mlflow writes the stage as a
 # tag, lowercased, so None becomes mlflow_none and Production mlflow_production.
@@ -102,8 +104,9 @@ def unresolved_hops(table: str) -> list[str]:
     return sorted(missing)
 
 
-def violations() -> tuple[list[dict], list[dict]]:
+def violations(regime: str | None = None) -> tuple[list[dict], list[dict]]:
     """Findings and warnings for the one invariant implemented so far."""
+    pol = load_policy(regime)
     findings: list[dict] = []
     warnings: list[dict] = []
 
@@ -124,9 +127,10 @@ def violations() -> tuple[list[dict], list[dict]]:
                     "warning": f"{phantom} is named by a column edge but has no entity, "
                                f"so its tags cannot be read",
                 })
-            for hit in protected_reaching(table):
+            for hit in protected_reaching(table, regime):
                 findings.append({
                     "invariant": INVARIANT,
+                    "regime": pol.name,
                     "model": model["urn"],
                     "model_name": model["name"],
                     "stages": model["stages"],
@@ -136,29 +140,44 @@ def violations() -> tuple[list[dict], list[dict]]:
                     "origin_column": hit["source_column"],
                     "hops": hit["hops"],
                     "tags": hit["tags"],
+                    "attribute": hit.get("attribute"),
+                    "basis": hit.get("basis"),
+                    "citation": hit.get("citation"),
+                    "why": hit.get("why"),
                 })
     return findings, warnings
 
 
-def _report(findings: list[dict], warnings: list[dict]) -> None:
+def _report(findings: list[dict], warnings: list[dict], pol) -> None:
     models = sorted({f["model_name"] for f in findings})
     print(f"== {INVARIANT} ==")
+    print(f"   under {pol.long_name}")
+    print(f"   watching columns tagged {', '.join(pol.protected_tags)}")
     if not findings:
-        print("  no violations")
+        print("\n  no violations")
     for name in models:
-        mine = [f for f in findings if f["model_name"] == name]
+        mine = sorted((f for f in findings if f["model_name"] == name),
+                      key=lambda f: (ORDER.get(f["basis"], 9), f["feature"]))
         stages = ", ".join(mine[0]["stages"])
+        counts = {}
+        for f in mine:
+            counts[f["basis"]] = counts.get(f["basis"], 0) + 1
+        breakdown = ", ".join(f"{n} {basis}" for basis, n in
+                              sorted(counts.items(), key=lambda kv: ORDER.get(kv[0], 9)))
         print(f"\n  {name}  ({stages})")
         print(f"  trained on {mine[0]['table']}, "
-              f"{len(columns(mine[0]['table']))} columns, {len(mine)} protected")
+              f"{len(columns(mine[0]['table']))} columns, {breakdown}")
         for f in mine:
             if f["hops"]:
                 plural = "hop" if f["hops"] == 1 else "hops"
                 origin = f"{f['origin_table']}.{f['origin_column']}, {f['hops']} {plural} back"
             else:
                 origin = "tagged on the feature itself"
-            print(f"    {f['feature']:24} {origin}")
-            print(f"    {'':24} [{', '.join(f['tags'])}]")
+            label = f["attribute"] or "not a declared attribute"
+            print(f"    {f['basis']:12} {f['feature']:22} {origin}")
+            print(f"    {'':12} {label}, {f['citation']}")
+            if f.get("why"):
+                print(f"    {'':12} {' '.join(f['why'].split())}")
 
     if warnings:
         print("\n== warnings ==")
@@ -170,17 +189,24 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json", action="store_true", help="emit findings as json")
+    ap.add_argument("--policy", help="regime to check against, see tools/policy.py list")
     ap.add_argument("--fail-on-violation", action="store_true",
                     help="exit non zero when anything fires, for use in a pipeline")
     args = ap.parse_args()
 
-    findings, warnings = violations()
+    pol = load_policy(args.policy)
+    findings, warnings = violations(args.policy)
     if args.json:
-        print(json.dumps({"findings": findings, "warnings": warnings}, indent=2))
+        print(json.dumps({"regime": pol.name, "long_name": pol.long_name,
+                          "tags_in_scope": list(pol.protected_tags),
+                          "findings": findings, "warnings": warnings}, indent=2))
     else:
-        _report(findings, warnings)
+        _report(findings, warnings, pol)
 
-    return 1 if (findings and args.fail_on_violation) else 0
+    # a conditional basis is a question for a person, not a fault, so it does not
+    # fail a pipeline on its own. only a prohibited one does.
+    blocking = [f for f in findings if f["basis"] == "prohibited"]
+    return 1 if (blocking and args.fail_on_violation) else 0
 
 
 if __name__ == "__main__":

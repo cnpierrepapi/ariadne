@@ -44,6 +44,8 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 
+from policy import load as load_policy
+
 warnings.filterwarnings("ignore")
 
 WAREHOUSE = os.environ.get(
@@ -55,23 +57,25 @@ FEATURE_TABLE = "analytics_marts.income_features"
 PERSON_TABLE = "analytics_marts.dim_person"
 JOIN_KEY = "person_id"
 
-# candidate attributes to attempt to rebuild, and how to read them as a yes or no
-# question. one versus rest for race, because fair lending compares each group
-# against the reference group rather than lumping them together.
-SENSITIVE = {
-    "race_code": {
-        "label": "race",
-        # PUMS RAC1P coding
-        "groups": {1: "White alone", 2: "Black alone", 3: "American Indian alone",
-                   6: "Asian alone", 8: "Some other race", 9: "Two or more races"},
-        "reference": 1,
-    },
-    "sex_code": {
-        "label": "sex",
-        "groups": {1: "Male", 2: "Female"},
-        "reference": 1,
-    },
-}
+def sensitive(regime: str | None = None) -> dict[str, dict]:
+    """Attributes to attempt to rebuild, keyed by the column holding each.
+
+    Comes from the declared regime rather than a list in this file, so pointing the
+    measurement at a hiring model under the ADA is a matter of naming a different
+    policy pack. Each is tested one group against the reference group, because fair
+    lending and adverse impact analysis both compare that way rather than lumping
+    everyone who is not in the reference group together.
+    """
+    return {
+        spec["column"]: {
+            "label": spec["attribute"],
+            "groups": spec["categories"],
+            "reference": spec["reference"],
+            "basis": spec["basis"],
+            "citation": spec.get("citation", ""),
+        }
+        for spec in load_policy(regime).testable()
+    }
 
 
 def deployed(model_name: str) -> dict:
@@ -148,7 +152,8 @@ def _score(X: pd.DataFrame, y: pd.Series, seed: int) -> dict:
     }
 
 
-def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,)) -> list[dict]:
+def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,),
+                regime: str | None = None) -> list[dict]:
     """Score every attribute that can be tested, repeated over seeds.
 
     Repeats are not decoration. A single split gives a number with no sense of
@@ -156,12 +161,13 @@ def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,)) -> list[dic
     it to an earlier one. Measured spread across seeds is what makes a difference
     between two runs meaningful rather than asserted.
     """
-    targets = [t for t in SENSITIVE if t in _person_columns()]
+    declared = sensitive(regime)
+    targets = [t for t in declared if t in _person_columns()]
     frame = read_frame(features, targets)
     findings: list[dict] = []
 
     for target in targets:
-        spec = SENSITIVE[target]
+        spec = declared[target]
         # the attribute under test must not be an input to rebuilding itself. it is
         # a legitimate feature of the deployed model and is read from the person
         # table as the answer, so without this it appears on both sides and scores
@@ -180,6 +186,7 @@ def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,)) -> list[dic
             findings.append({
                 "attribute": spec["label"], "column": target,
                 "group": name, "against": spec["groups"][spec["reference"]],
+                "basis": spec["basis"], "citation": spec["citation"],
                 "features_used": len(usable),
                 "auc": sum(aucs) / len(aucs),
                 "auc_stdev": (statistics.stdev(aucs) if len(aucs) > 1 else 0.0),
@@ -227,17 +234,18 @@ def main() -> int:
     ap.add_argument("--repeats", type=int, default=1,
                     help="split and refit this many times, to measure the wobble")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--policy", help="regime to read the sensitive attributes from")
     ap.add_argument("--per-feature", metavar="COLUMN",
                     help="also rank single columns by how much of COLUMN they carry")
     args = ap.parse_args()
 
     features = (args.features.split(",") if args.features
                 else deployed_features(args.model))
-    findings = reconstruct(features, seeds_from(args.seed, args.repeats))
+    findings = reconstruct(features, seeds_from(args.seed, args.repeats), args.policy)
 
     ranked = []
     if args.per_feature:
-        spec = SENSITIVE[args.per_feature]
+        spec = sensitive(args.policy)[args.per_feature]
         worst = max((f for f in findings if f["column"] == args.per_feature),
                     key=lambda f: f["auc"], default=None)
         if worst:

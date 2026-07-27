@@ -1,0 +1,77 @@
+# Regulation (EU) 2024/1689, the AI Act, for high risk systems under Annex III.
+#
+# Materially wider than ECOA in one respect that matters to the tooling. ECOA
+# prohibits named bases in a credit decision. Article 10 asks for examination for
+# biases likely to affect fundamental rights, which is a duty to look rather than a
+# list of forbidden columns. So this regime puts `personal_data` in scope as well as
+# `protected_attribute`, and a column like a neighbourhood identifier that ECOA does
+# not name becomes something to examine and document here.
+#
+# That difference is the point of keeping regimes in separate files. The same
+# warehouse and the same checks produce different findings under each, without a
+# line of code changing.
+#
+# Verify against current text before relying on any citation below. Article numbers
+# reflect the Regulation as published. The compliance timeline has been subject to
+# amendment proposals, so confirm what is in force for your classification.
+
+name: EU AI Act
+long_name: Regulation (EU) 2024/1689, Annex III high risk systems
+jurisdiction: European Union
+decision_context: >
+  High risk AI systems under Annex III, including creditworthiness and credit
+  scoring, life and health insurance pricing, employment and worker management,
+  education and vocational training, and access to essential services.
+citation: Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+
+protected_tags:
+  - protected_attribute
+  - personal_data
+
+restricted:
+
+  - attribute: race
+    basis: prohibited
+    citation: Article 10(2)(f), GDPR Article 9(1)
+    note: >
+      Racial or ethnic origin is a special category under GDPR Article 9. Article
+      10(5) of the AI Act permits processing it where strictly necessary for bias
+      detection and correction, subject to safeguards, which is what makes
+      measuring reconstructability lawful rather than a workaround.
+
+  - attribute: sex
+    basis: prohibited
+    citation: Article 10(2)(f)
+
+  - attribute: disability
+    basis: prohibited
+    citation: Article 10(2)(f), GDPR Article 9(1)
+    note: Health data is a special category under GDPR Article 9.
+
+  - attribute: citizenship
+    basis: examine
+    citation: Article 10(2)(f)
+
+  - attribute: nativity
+    basis: examine
+    citation: Article 10(2)(f)
+
+  - attribute: place_of_birth
+    basis: examine
+    citation: Article 10(2)(f)
+
+  - attribute: ancestry
+    basis: prohibited
+    citation: Article 10(2)(f), GDPR Article 9(1)
+    note: Ethnic origin is a special category under GDPR Article 9.
+
+  - attribute: marital_status
+    basis: examine
+    citation: Article 10(2)(f)
+
+  - attribute: age
+    basis: examine
+    citation: Article 10(2)(f)
+    note: >
+      Not a special category, but a characteristic whose effect on fundamental
+      rights Article 10 expects to be examined and documented.

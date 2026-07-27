@@ -1,0 +1,104 @@
+# Which column in this warehouse holds which human attribute.
+#
+# A fact about the data, not about any law. race_code holds race whether you are
+# reading ECOA, Title VII or the EU AI Act, and the PUMS coding does not change
+# between them. Keeping that here means the regime files in this directory refer to
+# attributes by name and never to column names, so a policy pack works unchanged
+# against a warehouse that spells its columns differently.
+#
+# `reference` is the group each other group is compared against. Fair lending and
+# adverse impact analysis both compare against a reference group rather than
+# lumping everyone else together, so the measurement follows that convention.
+#
+# `kind: continuous` marks an attribute that cannot be tested by comparing two
+# groups. Those are governed by tags only until the measurement grows a treatment
+# for them, and reconstruct.py says so rather than skipping them silently.
+
+attributes:
+
+  race:
+    column: race_code
+    encoding: PUMS RAC1P, recoded detailed race
+    kind: categorical
+    reference: 1
+    categories:
+      1: White alone
+      2: Black alone
+      3: American Indian alone
+      6: Asian alone
+      8: Some other race
+      9: Two or more races
+
+  sex:
+    column: sex_code
+    encoding: PUMS SEX
+    kind: categorical
+    reference: 1
+    categories:
+      1: Male
+      2: Female
+
+  disability:
+    column: disability_code
+    encoding: PUMS DIS
+    kind: categorical
+    reference: 2
+    categories:
+      1: With a disability
+      2: Without a disability
+
+  marital_status:
+    column: marital_status_code
+    encoding: PUMS MAR
+    kind: categorical
+    reference: 1
+    categories:
+      1: Married
+      2: Widowed
+      3: Divorced
+      4: Separated
+      5: Never married
+
+  citizenship:
+    column: citizenship_code
+    encoding: PUMS CIT
+    kind: categorical
+    reference: 1
+    proxy_for: national origin
+    categories:
+      1: Born in the United States
+      2: Born in a US territory
+      3: Born abroad to American parents
+      4: Naturalised citizen
+      5: Not a citizen
+
+  nativity:
+    column: nativity_code
+    encoding: PUMS NATIVITY
+    kind: categorical
+    reference: 1
+    proxy_for: national origin
+    categories:
+      1: Native born
+      2: Foreign born
+
+  age:
+    column: age
+    encoding: PUMS AGEP, years
+    kind: continuous
+
+  place_of_birth:
+    column: place_of_birth_code
+    encoding: PUMS POBP
+    kind: categorical
+    reference: 0
+    proxy_for: national origin
+    categories: {}
+
+  ancestry:
+    column: ancestry_code
+    encoding: PUMS ANC1P
+    kind: categorical
+    reference: 0
+    proxy_for: national origin
+    categories: {}

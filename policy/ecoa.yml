@@ -1,0 +1,70 @@
+# Equal Credit Opportunity Act, Regulation B.
+#
+# The oldest and clearest of the regimes here, which is why the reference stack
+# models a credit decision. Attributes are named as declared in attributes.yml.
+#
+# `basis` decides what a finding means, and the three levels are not decoration:
+#
+#   prohibited   No exception exists. A finding is a finding.
+#   conditional  Permitted under a stated condition, so a finding is a question
+#                for a person rather than a fault.
+#   examine      Not prohibited, but the regime expects documented examination.
+#
+# Verify against current text before relying on any citation below. This is
+# engineering configuration, not legal advice.
+
+name: ECOA
+long_name: Equal Credit Opportunity Act, Regulation B
+jurisdiction: United States
+decision_context: Credit and lending decisions about a person
+citation: 15 USC 1691(a), 12 CFR 1002.6(b)
+
+# a column carrying any of these tags is in scope for this regime
+protected_tags:
+  - protected_attribute
+
+restricted:
+
+  - attribute: race
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+
+  - attribute: sex
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+
+  - attribute: marital_status
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+
+  - attribute: citizenship
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+    note: >
+      National origin is a prohibited basis. Citizenship status is a close proxy
+      for it, and Regulation B permits enquiry into permanent residency only to
+      the extent needed to establish creditworthiness.
+
+  - attribute: nativity
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+    note: A direct proxy for national origin.
+
+  - attribute: place_of_birth
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+    note: A direct proxy for national origin.
+
+  - attribute: ancestry
+    basis: prohibited
+    citation: 15 USC 1691(a)(1)
+    note: A proxy for national origin and ethnicity.
+
+  - attribute: age
+    basis: conditional
+    citation: 12 CFR 1002.2(p)
+    note: >
+      Age may be used in an empirically derived, demonstrably and statistically
+      sound credit scoring system, provided applicants aged 62 and over are not
+      treated less favourably. So a finding on age is a question about whether the
+      system meets that standard, not a fault on its own.

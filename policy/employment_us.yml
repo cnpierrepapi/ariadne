@@ -1,0 +1,67 @@
+# United States employment law, for a model that decides something about a worker
+# or a candidate. Title VII, the ADA and the ADEA together.
+#
+# Present so that the same checks can be pointed at a hiring model rather than a
+# lending model without touching code. What differs from ecoa.yml is not the
+# machinery, it is which attributes are named and which statute names them.
+#
+# Verify against current text before relying on any citation below. This is
+# engineering configuration, not legal advice.
+
+name: Employment US
+long_name: Title VII of the Civil Rights Act, the ADA, and the ADEA
+jurisdiction: United States
+decision_context: >
+  Hiring, shortlisting, promotion, assignment, discipline and termination
+  decisions about a worker or a candidate.
+citation: 42 USC 2000e-2, 42 USC 12112, 29 USC 623
+
+protected_tags:
+  - protected_attribute
+
+restricted:
+
+  - attribute: race
+    basis: prohibited
+    citation: 42 USC 2000e-2(a), Title VII
+
+  - attribute: sex
+    basis: prohibited
+    citation: 42 USC 2000e-2(a), Title VII
+
+  - attribute: disability
+    basis: prohibited
+    citation: 42 USC 12112, ADA
+    note: >
+      The ADA also restricts when disability related enquiry may occur at all,
+      which is a stronger constraint than merely not using the answer.
+
+  - attribute: citizenship
+    basis: prohibited
+    citation: 42 USC 2000e-2(a), Title VII national origin
+
+  - attribute: nativity
+    basis: prohibited
+    citation: 42 USC 2000e-2(a), Title VII national origin
+
+  - attribute: place_of_birth
+    basis: prohibited
+    citation: 42 USC 2000e-2(a), Title VII national origin
+
+  - attribute: ancestry
+    basis: prohibited
+    citation: 42 USC 2000e-2(a), Title VII national origin
+
+  - attribute: age
+    basis: prohibited
+    citation: 29 USC 623, ADEA
+    note: >
+      Protects workers aged 40 and over. Unlike ECOA there is no scoring system
+      carve out, so age here is prohibited rather than conditional. The same
+      attribute, a different basis, decided by the regime rather than by the code.
+
+  - attribute: marital_status
+    basis: examine
+    citation: >
+      Not a federally protected class in employment, though many states protect it
+      and it correlates with sex and with pregnancy.
