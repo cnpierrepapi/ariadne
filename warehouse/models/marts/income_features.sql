@@ -23,6 +23,7 @@ select
     marital_status_code,
     occupation_code,
     hours_worked_per_week,
+    race_code,
 
     household_size,
     household_income_usd,
