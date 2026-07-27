@@ -1,0 +1,15 @@
+== protected attribute reaches a deployed model ==
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 3 protected
+    age                      tagged on the feature itself
+                             [personal_data, protected_attribute]
+    marital_status_code      tagged on the feature itself
+                             [personal_data, protected_attribute]
+    race_code                warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                             [personal_data, protected_attribute]
+
+== warnings ==
+  warehouse.analytics_staging.raw_geography is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_household is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_person is named by a column edge but has no entity, so its tags cannot be read

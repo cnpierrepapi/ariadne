@@ -1,0 +1,217 @@
+{
+  "recordings": [
+    {
+      "recorded_at": "2026-07-27T09:28:38+00:00",
+      "model": "income-classifier",
+      "version": "2",
+      "run_id": "881fc85c92fd4ae7afcee494363f4a73",
+      "model_accuracy": 0.8766657850298061,
+      "features": [
+        "age",
+        "class_of_worker_code",
+        "education_level_code",
+        "marital_status_code",
+        "occupation_code",
+        "hours_worked_per_week",
+        "race_code",
+        "household_size",
+        "household_income_usd",
+        "tenure_code",
+        "census_region"
+      ],
+      "measurements": [
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Black alone",
+          "against": "White alone",
+          "auc": 0.7293867067906102,
+          "auc_stdev": 0.007272152232261784,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 130210
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "American Indian alone",
+          "against": "White alone",
+          "auc": 0.7195223341631541,
+          "auc_stdev": 0.0153339207069166,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 122913
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Asian alone",
+          "against": "White alone",
+          "auc": 0.749723304942786,
+          "auc_stdev": 0.0031808652221202763,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 154425
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Some other race",
+          "against": "White alone",
+          "auc": 0.7890209701777127,
+          "auc_stdev": 0.0037443727888483453,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 144493
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Two or more races",
+          "against": "White alone",
+          "auc": 0.6376906378839174,
+          "auc_stdev": 0.004621411619870003,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 129888
+        },
+        {
+          "attribute": "sex",
+          "column": "sex_code",
+          "group": "Female",
+          "against": "Male",
+          "auc": 0.8148579318400931,
+          "auc_stdev": 0.0012198041355309442,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 196604
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-07-27T09:31:46+00:00",
+      "model": "income-classifier",
+      "version": "3",
+      "run_id": "8e504667017a43229d0557b1ee9eaa34",
+      "model_accuracy": 0.8757705845252386,
+      "features": [
+        "age",
+        "class_of_worker_code",
+        "education_level_code",
+        "marital_status_code",
+        "occupation_code",
+        "hours_worked_per_week",
+        "race_code",
+        "household_size",
+        "household_income_usd",
+        "tenure_code",
+        "census_region",
+        "puma_code"
+      ],
+      "measurements": [
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Black alone",
+          "against": "White alone",
+          "auc": 0.818194431102385,
+          "auc_stdev": 0.002871221620360637,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 130210
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "American Indian alone",
+          "against": "White alone",
+          "auc": 0.7506133018705036,
+          "auc_stdev": 0.02824201773483486,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 122913
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Asian alone",
+          "against": "White alone",
+          "auc": 0.8254975136026735,
+          "auc_stdev": 0.004308513341067138,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 154425
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Some other race",
+          "against": "White alone",
+          "auc": 0.8269785278662841,
+          "auc_stdev": 0.0022936699607544195,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 144493
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Two or more races",
+          "against": "White alone",
+          "auc": 0.6591385392795054,
+          "auc_stdev": 0.008248353295626268,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 129888
+        },
+        {
+          "attribute": "sex",
+          "column": "sex_code",
+          "group": "Female",
+          "against": "Male",
+          "auc": 0.8145532254484409,
+          "auc_stdev": 0.000830982246018118,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 196604
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+== reconstructability of a protected attribute moved ==
+   income-classifier v2 recorded 2026-07-27T09:28:38+00:00
+   income-classifier v3 recorded 2026-07-27T09:31:46+00:00
+   features gained: puma_code
+   model accuracy 0.8767 to 0.8758 (-0.0009)
+
+  race: Black alone against White alone
+    0.7294 to 0.8182  (+0.0888, 18 times the measured noise of 0.0051)
+  race: Asian alone against White alone
+    0.7497 to 0.8255  (+0.0758, 20 times the measured noise of 0.0037)
+  race: Some other race against White alone
+    0.7890 to 0.8270  (+0.0380, 13 times the measured noise of 0.0030)
+
+  the deployed model gained puma_code between these recordings, which is where to look first

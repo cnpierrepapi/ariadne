@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import statistics
 import warnings
 
 import pandas as pd
@@ -73,8 +74,8 @@ SENSITIVE = {
 }
 
 
-def deployed_features(model_name: str) -> list[str]:
-    """The feature list of whichever version the registry says is serving."""
+def deployed(model_name: str) -> dict:
+    """Whichever version the registry says is serving, and what it trained on."""
     from mlflow.tracking import MlflowClient
 
     client = MlflowClient(TRACKING)
@@ -89,9 +90,22 @@ def deployed_features(model_name: str) -> list[str]:
     features = run.data.tags.get("features")
     if not features:
         raise SystemExit(f"run {newest.run_id} did not record its feature list")
-    print(f"reading the feature list off {model_name} v{newest.version}, "
-          f"the version in Production")
-    return features.split(",")
+    return {
+        "model": model_name,
+        "version": str(newest.version),
+        "run_id": newest.run_id,
+        "features": features.split(","),
+        "accuracy": run.data.metrics.get("accuracy"),
+    }
+
+
+def deployed_features(model_name: str, quiet: bool = False) -> list[str]:
+    """The feature list of whichever version the registry says is serving."""
+    serving = deployed(model_name)
+    if not quiet:
+        print(f"reading the feature list off {model_name} v{serving['version']}, "
+              f"the version in Production")
+    return serving["features"]
 
 
 def read_frame(features: list[str], targets: list[str]) -> pd.DataFrame:
@@ -134,7 +148,14 @@ def _score(X: pd.DataFrame, y: pd.Series, seed: int) -> dict:
     }
 
 
-def reconstruct(features: list[str], seed: int = 17) -> list[dict]:
+def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,)) -> list[dict]:
+    """Score every attribute that can be tested, repeated over seeds.
+
+    Repeats are not decoration. A single split gives a number with no sense of
+    its own wobble, and the whole use of this measurement downstream is comparing
+    it to an earlier one. Measured spread across seeds is what makes a difference
+    between two runs meaningful rather than asserted.
+    """
     targets = [t for t in SENSITIVE if t in _person_columns()]
     frame = read_frame(features, targets)
     findings: list[dict] = []
@@ -154,11 +175,19 @@ def reconstruct(features: list[str], seed: int = 17) -> list[dict]:
             if subset[target].nunique() < 2 or len(subset) < 2000:
                 continue
             y = (subset[target] == code).astype(int)
-            result = _score(_prepare(subset, usable), y, seed)
+            runs = [_score(_prepare(subset, usable), y, seed) for seed in seeds]
+            aucs = [r["auc"] for r in runs]
             findings.append({
                 "attribute": spec["label"], "column": target,
                 "group": name, "against": spec["groups"][spec["reference"]],
-                "features_used": len(usable), **result,
+                "features_used": len(usable),
+                "auc": sum(aucs) / len(aucs),
+                "auc_stdev": (statistics.stdev(aucs) if len(aucs) > 1 else 0.0),
+                "seeds": list(seeds),
+                "accuracy": runs[0]["accuracy"],
+                "baseline_accuracy": runs[0]["baseline_accuracy"],
+                "positive_rate": runs[0]["positive_rate"],
+                "rows": runs[0]["rows"],
             })
     return findings
 
@@ -176,6 +205,11 @@ def per_feature(features: list[str], target: str, group: int, reference: int,
     return sorted(ranked, key=lambda r: r["auc"], reverse=True)
 
 
+def seeds_from(seed: int, repeats: int) -> tuple[int, ...]:
+    """Deterministic seeds, so a rerun of the same recording gives the same answer."""
+    return tuple(seed + offset for offset in range(max(1, repeats)))
+
+
 def _person_columns() -> set[str]:
     with psycopg2.connect(WAREHOUSE) as conn:
         frame = pd.read_sql(
@@ -190,6 +224,8 @@ def main() -> int:
     ap.add_argument("--model", default="income-classifier")
     ap.add_argument("--features", help="comma separated, instead of reading the registry")
     ap.add_argument("--seed", type=int, default=17)
+    ap.add_argument("--repeats", type=int, default=1,
+                    help="split and refit this many times, to measure the wobble")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--per-feature", metavar="COLUMN",
                     help="also rank single columns by how much of COLUMN they carry")
@@ -197,7 +233,7 @@ def main() -> int:
 
     features = (args.features.split(",") if args.features
                 else deployed_features(args.model))
-    findings = reconstruct(features, args.seed)
+    findings = reconstruct(features, seeds_from(args.seed, args.repeats))
 
     ranked = []
     if args.per_feature:
@@ -220,7 +256,8 @@ def main() -> int:
     for f in sorted(findings, key=lambda f: f["auc"], reverse=True):
         lift = f["accuracy"] - f["baseline_accuracy"]
         print(f"  {f['attribute']}: {f['group']} against {f['against']}")
-        print(f"    auc {f['auc']:.3f}   accuracy {f['accuracy']:.3f} "
+        spread = f" plus or minus {f['auc_stdev']:.4f}" if f["auc_stdev"] else ""
+        print(f"    auc {f['auc']:.3f}{spread}   accuracy {f['accuracy']:.3f} "
               f"against a baseline of {f['baseline_accuracy']:.3f} "
               f"({lift:+.3f})   {f['rows']:,} rows")
     if ranked:

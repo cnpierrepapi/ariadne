@@ -1,0 +1,59 @@
+{
+  "findings": [
+    {
+      "invariant": "reconstructability of a protected attribute moved",
+      "model": "income-classifier",
+      "attribute": "race",
+      "group": "Black alone",
+      "against": "White alone",
+      "was": 0.7293867067906102,
+      "now": 0.818194431102385,
+      "delta": 0.08880772431177475,
+      "threshold": 0.020286747705244842,
+      "noise_stdev": 0.005071686926311211,
+      "multiples_of_noise": 17.510490217969203,
+      "from_version": "2",
+      "to_version": "3"
+    },
+    {
+      "invariant": "reconstructability of a protected attribute moved",
+      "model": "income-classifier",
+      "attribute": "race",
+      "group": "Asian alone",
+      "against": "White alone",
+      "was": 0.749723304942786,
+      "now": 0.8254975136026735,
+      "delta": 0.07577420865988749,
+      "threshold": 0.02,
+      "noise_stdev": 0.0037446892815937074,
+      "multiples_of_noise": 20.235112438391322,
+      "from_version": "2",
+      "to_version": "3"
+    },
+    {
+      "invariant": "reconstructability of a protected attribute moved",
+      "model": "income-classifier",
+      "attribute": "race",
+      "group": "Some other race",
+      "against": "White alone",
+      "was": 0.7890209701777127,
+      "now": 0.8269785278662841,
+      "delta": 0.03795755768857145,
+      "threshold": 0.02,
+      "noise_stdev": 0.0030190213748013824,
+      "multiples_of_noise": 12.572801903752216,
+      "from_version": "2",
+      "to_version": "3"
+    }
+  ],
+  "context": {
+    "features_gained": [
+      "puma_code"
+    ],
+    "features_lost": [],
+    "accuracy_was": 0.8766657850298061,
+    "accuracy_now": 0.8757705845252386
+  },
+  "from": "2026-07-27T09:28:38+00:00",
+  "to": "2026-07-27T09:31:46+00:00"
+}
