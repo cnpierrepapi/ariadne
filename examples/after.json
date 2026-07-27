@@ -1,0 +1,72 @@
+{
+  "findings": [
+    {
+      "invariant": "protected attribute reaches a deployed model",
+      "model": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,income-classifier_2,PROD)",
+      "model_name": "income-classifier_2",
+      "stages": [
+        "mlflow_production"
+      ],
+      "table": "warehouse.analytics_marts.income_features",
+      "feature": "age",
+      "origin_table": "warehouse.analytics_marts.income_features",
+      "origin_column": "age",
+      "hops": 0,
+      "tags": [
+        "personal_data",
+        "protected_attribute"
+      ]
+    },
+    {
+      "invariant": "protected attribute reaches a deployed model",
+      "model": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,income-classifier_2,PROD)",
+      "model_name": "income-classifier_2",
+      "stages": [
+        "mlflow_production"
+      ],
+      "table": "warehouse.analytics_marts.income_features",
+      "feature": "marital_status_code",
+      "origin_table": "warehouse.analytics_marts.income_features",
+      "origin_column": "marital_status_code",
+      "hops": 0,
+      "tags": [
+        "personal_data",
+        "protected_attribute"
+      ]
+    },
+    {
+      "invariant": "protected attribute reaches a deployed model",
+      "model": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,income-classifier_2,PROD)",
+      "model_name": "income-classifier_2",
+      "stages": [
+        "mlflow_production"
+      ],
+      "table": "warehouse.analytics_marts.income_features",
+      "feature": "race_code",
+      "origin_table": "warehouse.analytics_marts.dim_person",
+      "origin_column": "race_code",
+      "hops": 1,
+      "tags": [
+        "personal_data",
+        "protected_attribute"
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "model": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,income-classifier_2,PROD)",
+      "table": "warehouse.analytics_staging.raw_geography",
+      "warning": "warehouse.analytics_staging.raw_geography is named by a column edge but has no entity, so its tags cannot be read"
+    },
+    {
+      "model": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,income-classifier_2,PROD)",
+      "table": "warehouse.analytics_staging.raw_household",
+      "warning": "warehouse.analytics_staging.raw_household is named by a column edge but has no entity, so its tags cannot be read"
+    },
+    {
+      "model": "urn:li:mlModel:(urn:li:dataPlatform:mlflow,income-classifier_2,PROD)",
+      "table": "warehouse.analytics_staging.raw_person",
+      "warning": "warehouse.analytics_staging.raw_person is named by a column edge but has no entity, so its tags cannot be read"
+    }
+  ]
+}

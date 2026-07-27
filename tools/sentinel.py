@@ -153,7 +153,8 @@ def _report(findings: list[dict], warnings: list[dict]) -> None:
               f"{len(columns(mine[0]['table']))} columns, {len(mine)} protected")
         for f in mine:
             if f["hops"]:
-                origin = f"{f['origin_table']}.{f['origin_column']}, {f['hops']} hops back"
+                plural = "hop" if f["hops"] == 1 else "hops"
+                origin = f"{f['origin_table']}.{f['origin_column']}, {f['hops']} {plural} back"
             else:
                 origin = "tagged on the feature itself"
             print(f"    {f['feature']:24} {origin}")
