@@ -1,0 +1,37 @@
+reading workforce-classifier v1, the version in Production: 5 features on analytics_marts.workforce_features
+
+== rebuilding attributes the model does not contain ==
+   5 features on the deployed model, the attribute under test excluded from each run
+
+  marital_status: Never married against Married
+    auc 0.901 plus or minus 0.0010   accuracy 0.832 against a baseline of 0.544 (+0.288)   216,407 rows
+  marital_status: Widowed against Married
+    auc 0.825 plus or minus 0.0102   accuracy 0.974 against a baseline of 0.973 (+0.001)   121,024 rows
+  citizenship: Not a citizen against Born in the United States
+    auc 0.784 plus or minus 0.0017   accuracy 0.860 against a baseline of 0.822 (+0.038)   201,128 rows
+  citizenship: Naturalised citizen against Born in the United States
+    auc 0.761 plus or minus 0.0013   accuracy 0.823 against a baseline of 0.807 (+0.016)   204,822 rows
+  marital_status: Divorced against Married
+    auc 0.756 plus or minus 0.0045   accuracy 0.884 against a baseline of 0.855 (+0.029)   137,728 rows
+  nativity: Foreign born against Native born
+    auc 0.751 plus or minus 0.0010   accuracy 0.751 against a baseline of 0.692 (+0.060)   244,328 rows
+  marital_status: Separated against Married
+    auc 0.749 plus or minus 0.0081   accuracy 0.962 against a baseline of 0.962 (+0.000)   122,452 rows
+  disability: With a disability against Without a disability
+    auc 0.738 plus or minus 0.0029   accuracy 0.914 against a baseline of 0.913 (+0.001)   244,328 rows
+  race: Some other race against White alone
+    auc 0.737 plus or minus 0.0029   accuracy 0.826 against a baseline of 0.826 (+0.000)   177,196 rows
+  race: Black alone against White alone
+    auc 0.685 plus or minus 0.0032   accuracy 0.923 against a baseline of 0.923 (+0.000)   158,665 rows
+  race: Asian alone against White alone
+    auc 0.672 plus or minus 0.0029   accuracy 0.783 against a baseline of 0.783 (+0.000)   187,036 rows
+  race: American Indian alone against White alone
+    auc 0.639 plus or minus 0.0085   accuracy 0.987 against a baseline of 0.987 (+0.000)   148,301 rows
+  race: Two or more races against White alone
+    auc 0.620 plus or minus 0.0015   accuracy 0.931 against a baseline of 0.931 (+0.000)   157,185 rows
+  sex: Female against Male
+    auc 0.592 plus or minus 0.0012   accuracy 0.561 against a baseline of 0.501 (+0.060)   244,328 rows
+  citizenship: Born in a US territory against Born in the United States
+    auc 0.574 plus or minus 0.0327   accuracy 0.997 against a baseline of 0.997 (-0.000)   165,817 rows
+  citizenship: Born abroad to American parents against Born in the United States
+    auc 0.573 plus or minus 0.0039   accuracy 0.981 against a baseline of 0.981 (+0.000)   168,560 rows

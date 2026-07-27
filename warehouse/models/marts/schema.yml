@@ -120,3 +120,29 @@ models:
         description: Census region of residence.
       - name: income_above_50k
         description: Label. One when personal income exceeds fifty thousand US dollars.
+
+  - name: workforce_features
+    description: >
+      Feature table for the workforce classifier, which estimates whether a working
+      age person holds full time work. Governed by US employment law rather than
+      ECOA, which reaches a different verdict on the same columns.
+    columns:
+      - name: person_id
+        description: Grain of the feature table, one row per person.
+        tests: [unique, not_null]
+      - name: age
+        description: >
+          Age in years. Carried from dim_person. Protected for workers aged forty and
+          over under the ADEA, which has no equivalent of the ECOA scoring carve out.
+        tags: ["personal_data", "protected_attribute"]
+      - name: education_level_code
+        description: Highest level of education attained.
+      - name: marital_status_code
+        description: Marital status, PUMS MAR coding.
+        tags: ["personal_data", "protected_attribute"]
+      - name: household_size
+        description: Number of people in the household.
+      - name: census_region
+        description: Census region of residence.
+      - name: works_full_time
+        description: Label. One when usual hours worked per week reach thirty five.

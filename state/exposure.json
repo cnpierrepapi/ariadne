@@ -212,6 +212,248 @@
           "rows": 196604
         }
       ]
+    },
+    {
+      "recorded_at": "2026-07-27T13:21:25+00:00",
+      "model": "workforce-classifier",
+      "version": "1",
+      "run_id": "6f63bc57a7bc444785ec1ca6dec21830",
+      "feature_table": "analytics_marts.workforce_features",
+      "regime": "employment_us",
+      "model_accuracy": 0.6854392456042697,
+      "features": [
+        "age",
+        "education_level_code",
+        "marital_status_code",
+        "household_size",
+        "census_region"
+      ],
+      "measurements": [
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Black alone",
+          "against": "White alone",
+          "auc": 0.6851259670847908,
+          "auc_stdev": 0.0032426341003294343,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 158665
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "American Indian alone",
+          "against": "White alone",
+          "auc": 0.6389403990721917,
+          "auc_stdev": 0.008452833831593466,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 148301
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Asian alone",
+          "against": "White alone",
+          "auc": 0.6724736756327333,
+          "auc_stdev": 0.002869205727442945,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 187036
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Some other race",
+          "against": "White alone",
+          "auc": 0.7371760452411339,
+          "auc_stdev": 0.00285140806682569,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 177196
+        },
+        {
+          "attribute": "race",
+          "column": "race_code",
+          "group": "Two or more races",
+          "against": "White alone",
+          "auc": 0.6203095148654657,
+          "auc_stdev": 0.001548482941804493,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 157185
+        },
+        {
+          "attribute": "sex",
+          "column": "sex_code",
+          "group": "Female",
+          "against": "Male",
+          "auc": 0.5924656559603855,
+          "auc_stdev": 0.0012118169066704125,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 244328
+        },
+        {
+          "attribute": "disability",
+          "column": "disability_code",
+          "group": "With a disability",
+          "against": "Without a disability",
+          "auc": 0.7377560584761796,
+          "auc_stdev": 0.002935605769865377,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 244328
+        },
+        {
+          "attribute": "citizenship",
+          "column": "citizenship_code",
+          "group": "Born in a US territory",
+          "against": "Born in the United States",
+          "auc": 0.5744319506443578,
+          "auc_stdev": 0.032693782558216644,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 165817
+        },
+        {
+          "attribute": "citizenship",
+          "column": "citizenship_code",
+          "group": "Born abroad to American parents",
+          "against": "Born in the United States",
+          "auc": 0.5729450510318602,
+          "auc_stdev": 0.003910526154516307,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 168560
+        },
+        {
+          "attribute": "citizenship",
+          "column": "citizenship_code",
+          "group": "Naturalised citizen",
+          "against": "Born in the United States",
+          "auc": 0.7605191020145359,
+          "auc_stdev": 0.0013132949293051502,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 204822
+        },
+        {
+          "attribute": "citizenship",
+          "column": "citizenship_code",
+          "group": "Not a citizen",
+          "against": "Born in the United States",
+          "auc": 0.7835486308406213,
+          "auc_stdev": 0.0016836788003251417,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 201128
+        },
+        {
+          "attribute": "nativity",
+          "column": "nativity_code",
+          "group": "Foreign born",
+          "against": "Native born",
+          "auc": 0.750667424231413,
+          "auc_stdev": 0.0009964278692259714,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 244328
+        },
+        {
+          "attribute": "marital_status",
+          "column": "marital_status_code",
+          "group": "Widowed",
+          "against": "Married",
+          "auc": 0.8245592425715756,
+          "auc_stdev": 0.010222939808890075,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 121024
+        },
+        {
+          "attribute": "marital_status",
+          "column": "marital_status_code",
+          "group": "Divorced",
+          "against": "Married",
+          "auc": 0.7558489110203137,
+          "auc_stdev": 0.004487148195397137,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 137728
+        },
+        {
+          "attribute": "marital_status",
+          "column": "marital_status_code",
+          "group": "Separated",
+          "against": "Married",
+          "auc": 0.748686965826816,
+          "auc_stdev": 0.008077417373177152,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 122452
+        },
+        {
+          "attribute": "marital_status",
+          "column": "marital_status_code",
+          "group": "Never married",
+          "against": "Married",
+          "auc": 0.9006189207983238,
+          "auc_stdev": 0.0010003366243045097,
+          "seeds": [
+            17,
+            18,
+            19
+          ],
+          "rows": 216407
+        }
+      ]
     }
   ]
 }

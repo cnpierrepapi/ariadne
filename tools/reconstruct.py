@@ -27,7 +27,7 @@ warehouse, which is usually true, because collecting demographics for statutory
 reporting is often required even where using them in decisions is forbidden.
 
     python tools/reconstruct.py --model income-classifier
-    python tools/reconstruct.py --model income-classifier --json
+    python tools/reconstruct.py --model workforce-classifier --policy employment_us
 """
 
 from __future__ import annotations
@@ -53,6 +53,9 @@ WAREHOUSE = os.environ.get(
 )
 TRACKING = os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000")
 
+# Fallback only, for a run that predates the parameter being logged. The table a
+# model was trained on is read off the registry, because this measurement has to work
+# against whichever model it is pointed at rather than the one it was written for.
 FEATURE_TABLE = "analytics_marts.income_features"
 PERSON_TABLE = "analytics_marts.dim_person"
 JOIN_KEY = "person_id"
@@ -99,23 +102,18 @@ def deployed(model_name: str) -> dict:
         "version": str(newest.version),
         "run_id": newest.run_id,
         "features": features.split(","),
+        # which table this model was trained on, so the join below finds the right
+        # rows. Logged by ml/train.py; the fallback covers a run made before it was.
+        "feature_table": run.data.params.get("feature_table") or FEATURE_TABLE,
         "accuracy": run.data.metrics.get("accuracy"),
     }
 
 
-def deployed_features(model_name: str, quiet: bool = False) -> list[str]:
-    """The feature list of whichever version the registry says is serving."""
-    serving = deployed(model_name)
-    if not quiet:
-        print(f"reading the feature list off {model_name} v{serving['version']}, "
-              f"the version in Production")
-    return serving["features"]
-
-
-def read_frame(features: list[str], targets: list[str]) -> pd.DataFrame:
+def read_frame(features: list[str], targets: list[str],
+               feature_table: str = FEATURE_TABLE) -> pd.DataFrame:
     wanted = [c for c in features if c not in targets]
     columns = ", ".join([f"f.{c}" for c in wanted] + [f"d.{t}" for t in targets])
-    sql = (f"select {columns} from {FEATURE_TABLE} f "
+    sql = (f"select {columns} from {feature_table} f "
            f"join {PERSON_TABLE} d using ({JOIN_KEY})")
     with psycopg2.connect(WAREHOUSE) as conn:
         return pd.read_sql(sql, conn)
@@ -153,7 +151,8 @@ def _score(X: pd.DataFrame, y: pd.Series, seed: int) -> dict:
 
 
 def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,),
-                regime: str | None = None) -> list[dict]:
+                regime: str | None = None,
+                feature_table: str = FEATURE_TABLE) -> list[dict]:
     """Score every attribute that can be tested, repeated over seeds.
 
     Repeats are not decoration. A single split gives a number with no sense of
@@ -163,7 +162,7 @@ def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,),
     """
     declared = sensitive(regime)
     targets = [t for t in declared if t in _person_columns()]
-    frame = read_frame(features, targets)
+    frame = read_frame(features, targets, feature_table)
     findings: list[dict] = []
 
     for target in targets:
@@ -200,9 +199,10 @@ def reconstruct(features: list[str], seeds: tuple[int, ...] = (17,),
 
 
 def per_feature(features: list[str], target: str, group: int, reference: int,
-                seed: int = 17) -> list[dict]:
+                seed: int = 17,
+                feature_table: str = FEATURE_TABLE) -> list[dict]:
     """Which single columns carry the attribute, ranked. Where the leak is."""
-    frame = read_frame(features, [target])
+    frame = read_frame(features, [target], feature_table)
     subset = frame[frame[target].isin([reference, group])]
     y = (subset[target] == group).astype(int)
     ranked: list[dict] = []
@@ -230,6 +230,8 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", default="income-classifier")
     ap.add_argument("--features", help="comma separated, instead of reading the registry")
+    ap.add_argument("--feature-table", default=FEATURE_TABLE,
+                    help="only used alongside --features; otherwise the registry says")
     ap.add_argument("--seed", type=int, default=17)
     ap.add_argument("--repeats", type=int, default=1,
                     help="split and refit this many times, to measure the wobble")
@@ -239,9 +241,16 @@ def main() -> int:
                     help="also rank single columns by how much of COLUMN they carry")
     args = ap.parse_args()
 
-    features = (args.features.split(",") if args.features
-                else deployed_features(args.model))
-    findings = reconstruct(features, seeds_from(args.seed, args.repeats), args.policy)
+    if args.features:
+        features, table = args.features.split(","), args.feature_table
+    else:
+        serving = deployed(args.model)
+        features, table = serving["features"], serving["feature_table"]
+        print(f"reading {args.model} v{serving['version']}, the version in Production: "
+              f"{len(features)} features on {table}")
+
+    findings = reconstruct(features, seeds_from(args.seed, args.repeats),
+                           args.policy, table)
 
     ranked = []
     if args.per_feature:
@@ -251,10 +260,12 @@ def main() -> int:
         if worst:
             code = next(c for c, n in spec["groups"].items() if n == worst["group"])
             ranked = per_feature([f for f in features if f != args.per_feature],
-                                 args.per_feature, code, spec["reference"], args.seed)
+                                 args.per_feature, code, spec["reference"],
+                                 args.seed, table)
 
     if args.json:
-        print(json.dumps({"features": features, "findings": findings,
+        print(json.dumps({"model": args.model, "feature_table": table,
+                          "features": features, "findings": findings,
                           "per_feature": ranked}, indent=2))
         return 0
 

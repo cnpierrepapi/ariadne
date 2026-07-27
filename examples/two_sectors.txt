@@ -1,0 +1,62 @@
+### tools/sentinel.py --policy employment_us
+
+== restricted attribute reaches a deployed model ==
+   under Title VII of the Civil Rights Act, the ADA, and the ADEA
+   watching columns tagged protected_attribute
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 2 prohibited, 1 examine
+    prohibited   age                    tagged on the feature itself
+                 age, 29 USC 623, ADEA
+    prohibited   race_code              warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                 race, 42 USC 2000e-2(a), Title VII
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Not a federally protected class in employment, though many states protect it and it correlates with sex and with pregnancy.
+
+
+  workforce-classifier_1  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 8 columns, 1 prohibited, 1 examine
+    prohibited   age                    tagged on the feature itself
+                 age, 29 USC 623, ADEA
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Not a federally protected class in employment, though many states protect it and it correlates with sex and with pregnancy.
+
+
+== warnings ==
+  warehouse.analytics_staging.raw_geography is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_household is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_person is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_geography is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_household is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_person is named by a column edge but has no entity, so its tags cannot be read
+
+
+### tools/sentinel.py --policy ecoa
+
+== restricted attribute reaches a deployed model ==
+   under Equal Credit Opportunity Act, Regulation B
+   watching columns tagged protected_attribute
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 2 prohibited, 1 conditional
+    prohibited   marital_status_code    tagged on the feature itself
+                 marital_status, 15 USC 1691(a)(1)
+    prohibited   race_code              warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                 race, 15 USC 1691(a)(1)
+    conditional  age                    tagged on the feature itself
+                 age, 12 CFR 1002.2(p)
+
+  workforce-classifier_1  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 8 columns, 1 prohibited, 1 conditional
+    prohibited   marital_status_code    tagged on the feature itself
+                 marital_status, 15 USC 1691(a)(1)
+    conditional  age                    tagged on the feature itself
+                 age, 12 CFR 1002.2(p)
+
+== warnings ==
+  warehouse.analytics_staging.raw_geography is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_household is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_person is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_geography is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_household is named by a column edge but has no entity, so its tags cannot be read
+  warehouse.analytics_staging.raw_person is named by a column edge but has no entity, so its tags cannot be read

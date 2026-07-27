@@ -22,8 +22,13 @@ default threshold is the larger of four times the observed spread and a floor of
 0.02, which is roughly seven times that noise. Anything under it is the same
 number measured twice.
 
-    python tools/exposure.py record
-    python tools/exposure.py check
+A recording belongs to one model. The history file holds every model's, so a check
+compares a model against its own last recording and never against whatever happened
+to be written most recently. Two models watched at once would otherwise be compared
+to each other, and the answer would be arithmetic on unrelated numbers.
+
+    python tools/exposure.py record --model income-classifier
+    python tools/exposure.py check --model income-classifier
     python tools/exposure.py history
 """
 
@@ -63,14 +68,34 @@ def save(recordings: list[dict]) -> None:
         handle.write("\n")
 
 
-def record(model_name: str, seed: int, repeats: int) -> dict:
+def for_model(recordings: list[dict], model_name: str | None) -> list[dict]:
+    """One model's recordings, in the order they were made.
+
+    Recordings made before models were named in the history file are treated as
+    belonging to whichever model they say they do, which is all of them; the guard
+    is here so a missing name never silently matches everything.
+    """
+    if not model_name:
+        return recordings
+    return [r for r in recordings if r.get("model") == model_name]
+
+
+def models_recorded(recordings: list[dict]) -> list[str]:
+    return sorted({r.get("model", "unknown") for r in recordings})
+
+
+def record(model_name: str, seed: int, repeats: int,
+           regime: str | None = None) -> dict:
     serving = deployed(model_name)
-    measurements = reconstruct(serving["features"], seeds_from(seed, repeats))
+    measurements = reconstruct(serving["features"], seeds_from(seed, repeats),
+                               regime, serving["feature_table"])
     entry = {
         "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "model": serving["model"],
         "version": serving["version"],
         "run_id": serving["run_id"],
+        "feature_table": serving["feature_table"],
+        "regime": regime,
         "model_accuracy": serving["accuracy"],
         "features": serving["features"],
         "measurements": [
@@ -173,8 +198,10 @@ def main() -> int:
     p_record.add_argument("--seed", type=int, default=17)
     p_record.add_argument("--repeats", type=int, default=3,
                           help="splits per measurement, which is what sizes the noise")
+    p_record.add_argument("--policy", help="regime to read the sensitive attributes from")
 
-    p_check = sub.add_parser("check", help="compare the last two recordings")
+    p_check = sub.add_parser("check", help="compare a model's last two recordings")
+    p_check.add_argument("--model", default="income-classifier")
     p_check.add_argument("--json", action="store_true")
     p_check.add_argument("--fail-on-violation", action="store_true")
 
@@ -183,7 +210,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.cmd == "record":
-        entry = record(args.model, args.seed, args.repeats)
+        entry = record(args.model, args.seed, args.repeats, args.policy)
         print(f"recorded {entry['model']} v{entry['version']} at {entry['recorded_at']}")
         for m in sorted(entry["measurements"], key=lambda m: m["auc"], reverse=True):
             print(f"  {m['auc']:.4f} plus or minus {m['auc_stdev']:.4f}  "
@@ -197,17 +224,23 @@ def main() -> int:
         if not recordings:
             print(f"nothing recorded yet in {HISTORY}")
             return 0
-        for entry in recordings:
-            print(f"{entry['recorded_at']}  {entry['model']} v{entry['version']}  "
-                  f"{len(entry['features'])} features")
+        for model in models_recorded(recordings):
+            print(model)
+            for entry in for_model(recordings, model):
+                print(f"  {entry['recorded_at']}  v{entry['version']}  "
+                      f"{len(entry['features'])} features")
         return 0
 
-    if len(recordings) < 2:
-        print(f"only {len(recordings)} recording so far, so there is nothing to "
-              f"compare against yet. run record again after the pipeline changes.")
+    mine = for_model(recordings, args.model)
+    if len(mine) < 2:
+        print(f"only {len(mine)} recording of {args.model} so far, so there is "
+              f"nothing to compare against yet. run record again after the pipeline "
+              f"changes.")
+        if recordings and not mine:
+            print(f"recorded models: {', '.join(models_recorded(recordings))}")
         return 0
 
-    previous, current = recordings[-2], recordings[-1]
+    previous, current = mine[-2], mine[-1]
     findings, context = compare(previous, current)
 
     if args.json:

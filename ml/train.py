@@ -1,9 +1,18 @@
-"""Train and register the income classifier on the warehouse feature table.
+"""Train and register a classifier on a warehouse feature table.
 
 Deliberately ordinary. This is what an ML engineer writes on a Tuesday: pull the
 feature table, split, fit a gradient boosting model, log the run, register the
 version. No tricks, because the point of Ariadne is that nothing about this file
 has to change for the lineage to be watchable.
+
+Which table and which label are arguments rather than constants, because the same
+script trains the lending shaped model and the employment shaped one. Nothing about
+either sector lives here.
+
+    python ml/train.py
+    python ml/train.py --feature-table analytics_marts.workforce_features \\
+        --label works_full_time --experiment workforce-classifier \\
+        --model-name workforce-classifier
 
 The one line that carries weight is `mlflow.log_input`. It records which table the
 model was actually trained on, which is what turns a model in a registry into a node
@@ -32,31 +41,43 @@ WAREHOUSE = os.environ.get(
 TRACKING = os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000")
 
 FEATURE_TABLE = "analytics_marts.income_features"
-# how the catalog names this table: database included, because the urn is built
-# from the fully qualified name and the two have to line up
-CATALOG_NAME = f"warehouse.{FEATURE_TABLE}"
 LABEL = "income_above_50k"
-NOT_FEATURES = {"person_id", "survey_year", LABEL}
+# columns present in every feature table that are not features: the grain and the
+# survey vintage. The label is added to this set once it is known.
+NOT_FEATURES = {"person_id", "survey_year"}
+
+# the catalog names a table with its database included, because the urn is built
+# from the fully qualified name and the two have to line up
+CATALOG_PREFIX = "warehouse"
 
 
-def read_features() -> pd.DataFrame:
+def read_features(table: str) -> pd.DataFrame:
+    if not all(part.replace("_", "").isalnum() for part in table.split(".")):
+        raise SystemExit(f"refusing to query {table!r}")
     with psycopg2.connect(WAREHOUSE) as conn:
-        return pd.read_sql(f"select * from {FEATURE_TABLE}", conn)
+        return pd.read_sql(f"select * from {table}", conn)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--experiment", default="income-classifier")
     ap.add_argument("--model-name", default="income-classifier")
+    ap.add_argument("--feature-table", default=FEATURE_TABLE)
+    ap.add_argument("--label", default=LABEL)
     ap.add_argument("--test-size", type=float, default=0.25)
     ap.add_argument("--seed", type=int, default=17)
     args = ap.parse_args()
 
+    catalog_name = f"{CATALOG_PREFIX}.{args.feature_table}"
+    not_features = NOT_FEATURES | {args.label}
+
     mlflow.set_tracking_uri(TRACKING)
     mlflow.set_experiment(args.experiment)
 
-    frame = read_features()
-    features = [c for c in frame.columns if c not in NOT_FEATURES]
+    frame = read_features(args.feature_table)
+    if args.label not in frame.columns:
+        raise SystemExit(f"{args.feature_table} has no column named {args.label!r}")
+    features = [c for c in frame.columns if c not in not_features]
     print(f"training on {len(frame):,} rows, {len(features)} features")
     print(f"  {', '.join(features)}")
 
@@ -66,7 +87,7 @@ def main() -> int:
     for column in X.columns:
         if X[column].dtype == object:
             X[column] = X[column].astype("category")
-    y = frame[LABEL]
+    y = frame[args.label]
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=args.test_size, random_state=args.seed, stratify=y
     )
@@ -78,8 +99,8 @@ def main() -> int:
         mlflow.log_input(
             mlflow.data.from_pandas(
                 frame,
-                source=WarehouseTableSource(table=CATALOG_NAME, connection=WAREHOUSE),
-                name=CATALOG_NAME, targets=LABEL,
+                source=WarehouseTableSource(table=catalog_name, connection=WAREHOUSE),
+                name=catalog_name, targets=args.label,
             ),
             context="training",
         )
@@ -98,7 +119,10 @@ def main() -> int:
         mlflow.log_params({
             "max_iter": 200, "learning_rate": 0.1, "seed": args.seed,
             "n_features": len(features), "n_rows": len(frame),
-            "feature_table": FEATURE_TABLE,
+            # read back by reconstruct.py, which needs to know which table to join
+            # against without being told which sector it is looking at
+            "feature_table": args.feature_table,
+            "label": args.label,
         })
         mlflow.log_metrics({"accuracy": accuracy, "roc_auc": auc})
         mlflow.set_tag("features", ",".join(features))
