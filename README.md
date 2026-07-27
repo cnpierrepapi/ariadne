@@ -15,13 +15,21 @@ and answers the questions that only the graph can answer:
   timestamp, not a distribution plot.
 - **Is a protected attribute reaching a model that decides something about a person?**
   A structural fact, invisible to any monitor that only watches distributions.
+- **Can the model rebuild an attribute it does not contain?** Removing a column is
+  only a control if what remains does not carry the same information.
+
+> **High risk obligations under the EU AI Act attach on 2 August 2026.** Article 10
+> requires examination for bias, Article 9 requires it continuously rather than
+> once, and Annex IV requires documented data provenance. Ariadne produces all
+> three from the catalog rather than from a written annex that drifts.
+> **[How Ariadne maps to the Act, article by article](EU_AI_ACT.md)**
 
 ## Why lineage rather than statistics
 
-Around 40 percent of production ML failures trace to feature mismatches, and the
-post mortems all say the same thing: the bug lives in the space between teams,
-pipelines and assumptions, and nobody owns it until something has already gone
-wrong. That space is a graph. Ariadne walks it.
+Statistical monitoring answers questions about the model. A large class of failures
+is not about the model at all. It is about what reached the model, and it lives in
+the space between teams, pipelines and assumptions that nobody owns until something
+has already gone wrong. That space is a graph. Ariadne walks it.
 
 [`examples/`](examples/) has the sharp version, captured against a running catalog
 rather than written by hand. One line is added to a dbt model. Accuracy moves by
@@ -88,6 +96,15 @@ python tools/trace.py model <model urn>         # protected attributes reaching 
 python tools/sentinel.py
 python tools/sentinel.py --json
 python tools/sentinel.py --fail-on-violation
+
+# can the deployed model rebuild an attribute it does not contain
+python tools/reconstruct.py --model income-classifier --repeats 3
+python tools/reconstruct.py --model income-classifier --per-feature race_code
+
+# record that figure, and fire when it moves further than noise allows
+python tools/exposure.py record
+python tools/exposure.py check --fail-on-violation
+python tools/exposure.py history
 ```
 
 `--fail-on-violation` exits non zero, so `sentinel.py` drops into CI as a gate on a
@@ -115,7 +132,11 @@ dbt or training pipeline.
 | `tools/graph.py` | Thin read-only window on the DataHub graph |
 | `tools/trace.py` | Column level traversal, sibling resolution, protected attribute reachability |
 | `tools/sentinel.py` | Structural invariants over the graph |
+| `tools/reconstruct.py` | Measures whether the features can rebuild an attribute the model excludes |
+| `tools/exposure.py` | Records that measurement over time and fires when it moves |
 | `tools/verify.py` | Post-ingest checks that the catalog holds what it should |
+| `state/exposure.json` | Measurement history, which is the Article 12 record keeping trail |
+| `EU_AI_ACT.md` | How each check maps onto the Act, and what it does not cover |
 
 For how the traversal actually works, and the three graph shapes that make a naive
 walk give a confident wrong answer, see [TECHNICAL.md](TECHNICAL.md).
@@ -125,13 +146,16 @@ walk give a confident wrong answer, see [TECHNICAL.md](TECHNICAL.md).
 Built for the DataHub Agent Hackathon, Challenge 3, Production ML Agents.
 
 Working today: the full stack above, six hop lineage from raw census columns to a
-registered model, column level traversal across siblings, and the protected
-attribute invariant with phantom node warnings, proven end to end on captured runs
-in [`examples/`](examples/).
+registered model, column level traversal across siblings, the protected attribute
+invariant with phantom node warnings, the reconstruction measurement, and the delta
+watch. All proven end to end on captured runs in [`examples/`](examples/).
 
-Note that `income_features` currently ships with `race_code` selected. That is the
-demo change, committed deliberately so the violation reproduces. Remove that one
-line to get the clean state back.
+Note that `income_features` currently ships with `race_code` and `puma_code`
+selected. Both are demo changes, committed deliberately so the findings reproduce.
+They demonstrate different failures and are caught by different checks: `race_code`
+arrives tagged and the invariant names it, while `puma_code` is tagged as personal
+data and not as a protected attribute, so nothing reading tags can see it and only
+the delta watch does. Remove those two lines to get the clean state back.
 
 Writing findings back into DataHub as incidents on the affected model is designed
 and not yet built.
