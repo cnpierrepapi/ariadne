@@ -30,6 +30,7 @@ select
     tenure_code,
 
     census_region,
+    puma_code,
 
     case when personal_income_usd > 50000 then 1 else 0 end as income_above_50k
 
