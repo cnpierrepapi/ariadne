@@ -41,13 +41,40 @@ MCP_BIN = os.environ.get(
 )
 
 
+class UnavailableTool(SystemExit):
+    """Asked for a tool this transport does not advertise."""
+
+
 class Context:
-    """One question shape, two transports. Subclasses implement `call`."""
+    """One question shape, two transports. Subclasses implement `_invoke`.
+
+    The shape follows DataHub's own analytics-agent, which puts a
+    `ContextPlatform` base in front of each way of reaching a catalog and builds
+    the right one from config rather than picking at the call site. The part
+    worth copying most is the smallest: it discovers what tools a platform
+    offers instead of assuming, so a server that does not expose something fails
+    at the point of asking with a list of what it does have.
+
+    That matters here because the MCP server enables different tool groups
+    depending on how it is deployed. Against this open source instance it
+    advertises six tools, and the mutation, user and data quality groups are all
+    off. Hardcoding a tool name that a richer deployment happens to have would
+    work in one environment and fail confusingly in another.
+    """
 
     via = "?"
+    tools: tuple[str, ...] = ()
+
+    def _invoke(self, tool: str, args: dict) -> dict:
+        raise NotImplementedError
 
     def call(self, tool: str, args: dict) -> dict:
-        raise NotImplementedError
+        if tool not in self.tools:
+            raise UnavailableTool(
+                f"{self.via} does not offer {tool!r}. It offers: "
+                f"{', '.join(self.tools)}"
+            )
+        return self._invoke(tool, args)
 
     def close(self) -> None:
         pass
@@ -178,8 +205,9 @@ class KitContext(Context):
             "get_lineage": get_lineage,
             "list_schema_fields": list_schema_fields,
         }
+        self.tools = tuple(sorted(self._tools))
 
-    def call(self, tool: str, args: dict) -> dict:
+    def _invoke(self, tool: str, args: dict) -> dict:
         return self._tools[tool](**args)
 
 
@@ -238,13 +266,15 @@ class MCPContext(Context):
             async with ClientSession(read, write) as session:
                 info = await session.initialize()
                 self.server = f"{info.serverInfo.name} {info.serverInfo.version}"
+                # discovered, never assumed. which tools exist depends on how
+                # the server was deployed, not on what this file expects.
                 listed = await session.list_tools()
-                self.tools = sorted(t.name for t in listed.tools)
+                self.tools = tuple(sorted(t.name for t in listed.tools))
                 self._session = session
                 self._ready.set()
                 await self._stop.wait()
 
-    def call(self, tool: str, args: dict) -> dict:
+    def _invoke(self, tool: str, args: dict) -> dict:
         async def go():
             return await self._session.call_tool(tool, args)
 
@@ -307,7 +337,7 @@ if __name__ == "__main__":
         print(f"transport {ctx.via}, gms {GMS}")
         if ctx.via == "mcp":
             print(f"server    {ctx.server}")
-            print(f"tools     {len(ctx.tools)}: {', '.join(ctx.tools)}")
+        print(f"tools     {len(ctx.tools)} discovered: {', '.join(ctx.tools)}")
         hits = ctx.search("workforce_features", num_results=5)
         print(f"\nsearch workforce_features: {len(hits)} entities")
         for h in hits:
