@@ -1,0 +1,10 @@
+== reconstructability of a protected attribute moved ==
+   workforce-classifier v2 recorded 2026-07-27T13:30:31+00:00
+   workforce-classifier v3 recorded 2026-07-28T08:34:06+00:00
+   features gained: public_coverage_flag
+   model accuracy 0.6955 to 0.7310 (+0.0355)
+
+  disability: With a disability against Without a disability
+    0.7489 to 0.7883  (+0.0394, 12 times the measured noise of 0.0033)
+
+  the deployed model gained public_coverage_flag between these recordings, which is where to look first

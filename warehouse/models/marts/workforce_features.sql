@@ -34,6 +34,9 @@ select
     -- requested by workforce ops for commute feasibility, so roles that need
     -- reliable on site attendance can be prioritised sensibly
     vehicles_available,
+    -- benefits admin asked for the coverage flag so onboarding can tell who already
+    -- has cover and skip the enrolment prompt. no health detail, just the flag
+    public_coverage_flag,
 
     case when hours_worked_per_week >= 35 then 1 else 0 end as works_full_time
 
