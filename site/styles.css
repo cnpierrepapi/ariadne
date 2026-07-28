@@ -116,6 +116,8 @@ a:hover { color: #fff; }
   grid-template-columns: var(--rail) minmax(0, 1fr);
   padding: 0 var(--gutter);
   border-bottom: 1px solid var(--line);
+  /* the top bar is sticky, so an anchor jump would land under it */
+  scroll-margin-top: 72px;
 }
 
 .rail { position: relative; padding-top: 42px; }
