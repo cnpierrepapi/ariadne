@@ -1,0 +1,10 @@
+$ python tools/agree.py
+== do the two DataHub surfaces agree ==
+   kit  datahub-agent-context, in process
+   mcp  datahub 3.4.5 over stdio, 6 tools
+
+  agree    7 nodes  upstream of workforce_features on public_coverage_flag
+  agree    7 nodes  downstream of workforce_features
+  agree    5 nodes  upstream of dim_person on disability_code
+
+  3/3 walks identical through both

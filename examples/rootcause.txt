@@ -1,0 +1,23 @@
+$ python tools/rootcause.py --model workforce-classifier --policy eu_ai_act --via mcp
+== why did workforce-classifier move ==
+   read through mcp, under Regulation (EU) 2024/1689, Annex III high risk systems
+   comparing version 2 (2026-07-27T13:30:31) with version 3 (2026-07-28T08:34:06)
+
+  accuracy went up, 0.6955 to 0.7310 (+0.0355)
+  so nothing that watches model quality had a reason to object
+
+  1 measurement moved beyond noise
+    disability (With a disability against Without a disability)  0.7489 to 0.7883  +0.0394, 12x the noise
+
+  the deployed model gained 1 column between those two moments
+
+    public_coverage_flag
+      examine, in scope by tag, Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+      enters at postgres:raw_person, 7 hops back
+      called pubcov where it enters, so a search by name would not have found it
+      defined in models/marts/dim_person.sql
+      defined in models/marts/workforce_features.sql
+      defined in models/staging/sources.yml
+      defined in models/staging/stg_person.sql
+
+  cause: public_coverage_flag

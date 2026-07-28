@@ -42,46 +42,21 @@ from datetime import datetime, timezone
 
 from reconstruct import deployed, reconstruct, seeds_from
 
-HISTORY = os.environ.get(
-    "ARIADNE_EXPOSURE_HISTORY",
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                 "state", "exposure.json"),
+# Reading the history and deciding what counts as a change live in history.py,
+# which imports nothing heavy, so the agents can ask the same question without
+# dragging in scikit-learn. Re-exported here because this is still the command
+# people run and the names were public before the split.
+from history import (  # noqa: F401
+    FLOOR,
+    HISTORY,
+    SIGMAS,
+    _key,
+    compare,
+    for_model,
+    load,
+    models_recorded,
+    save,
 )
-
-# below this, two recordings are the same number measured twice
-FLOOR = 0.02
-# multiples of the observed spread that count as a real move
-SIGMAS = 4.0
-
-
-def load() -> list[dict]:
-    if not os.path.exists(HISTORY):
-        return []
-    with open(HISTORY, encoding="utf-8") as handle:
-        return json.load(handle).get("recordings", [])
-
-
-def save(recordings: list[dict]) -> None:
-    os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
-    with open(HISTORY, "w", encoding="utf-8") as handle:
-        json.dump({"recordings": recordings}, handle, indent=2)
-        handle.write("\n")
-
-
-def for_model(recordings: list[dict], model_name: str | None) -> list[dict]:
-    """One model's recordings, in the order they were made.
-
-    Recordings made before models were named in the history file are treated as
-    belonging to whichever model they say they do, which is all of them; the guard
-    is here so a missing name never silently matches everything.
-    """
-    if not model_name:
-        return recordings
-    return [r for r in recordings if r.get("model") == model_name]
-
-
-def models_recorded(recordings: list[dict]) -> list[str]:
-    return sorted({r.get("model", "unknown") for r in recordings})
 
 
 def record(model_name: str, seed: int, repeats: int,
@@ -108,53 +83,6 @@ def record(model_name: str, seed: int, repeats: int,
     recordings.append(entry)
     save(recordings)
     return entry
-
-
-def _key(measurement: dict) -> tuple[str, str]:
-    return measurement["column"], measurement["group"]
-
-
-def compare(previous: dict, current: dict) -> tuple[list[dict], dict]:
-    """Findings where the number moved further than the noise allows."""
-    before = {_key(m): m for m in previous["measurements"]}
-    findings: list[dict] = []
-
-    for now in current["measurements"]:
-        was = before.get(_key(now))
-        if not was:
-            continue
-        delta = now["auc"] - was["auc"]
-        # pooled spread of the two recordings, floored so a single seed recording
-        # does not produce a threshold of zero and fire on nothing
-        spread = max((was["auc_stdev"] + now["auc_stdev"]) / 2, 0.001)
-        threshold = max(FLOOR, SIGMAS * spread)
-        if abs(delta) < threshold:
-            continue
-        findings.append({
-            "invariant": "reconstructability of a protected attribute moved",
-            "model": current["model"],
-            "attribute": now["attribute"],
-            "group": now["group"],
-            "against": now["against"],
-            "was": was["auc"],
-            "now": now["auc"],
-            "delta": delta,
-            "threshold": threshold,
-            "noise_stdev": spread,
-            "multiples_of_noise": abs(delta) / spread,
-            "from_version": previous["version"],
-            "to_version": current["version"],
-        })
-
-    gained = [f for f in current["features"] if f not in previous["features"]]
-    lost = [f for f in previous["features"] if f not in current["features"]]
-    context = {
-        "features_gained": gained,
-        "features_lost": lost,
-        "accuracy_was": previous.get("model_accuracy"),
-        "accuracy_now": current.get("model_accuracy"),
-    }
-    return findings, context
 
 
 def _report(findings: list[dict], context: dict, previous: dict, current: dict) -> None:

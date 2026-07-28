@@ -1,0 +1,18 @@
+$ python tools/blast.py analytics_marts.dim_person --column public_coverage_flag --policy eu_ai_act
+== blast radius of a change to analytics_marts.dim_person.public_coverage_flag ==
+   read through kit, under Regulation (EU) 2024/1689, Annex III high risk systems
+
+  examine      in scope because it carries personal_data, and EU AI Act watches that tag.
+               under Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+
+  reaches 1 deployed model
+    workforce-classifier_3     mlflow_production, 5 hops
+
+  and 1 registered but not serving
+    workforce-classifier_1     mlflow_archived
+
+  through 2 downstream tables
+    1 hop  [dbt] workforce_features carrying public_coverage_flag
+    2 hop  [postgres] workforce_features carrying public_coverage_flag
+
+  and 8 training runs that consumed it

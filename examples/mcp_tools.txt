@@ -1,0 +1,11 @@
+$ python tools/context.py --via mcp
+transport mcp, gms http://localhost:8080
+server    datahub 3.4.5
+tools     6: get_dataset_queries, get_entities, get_lineage, get_lineage_paths_between, list_schema_fields, search
+
+search workforce_features: 5 entities
+  urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
+  urn:li:dataset:(urn:li:dataPlatform:postgres,warehouse.analytics_marts.workforce_features,PROD)
+  urn:li:dataset:(urn:li:dataPlatform:mlflow,warehouse.analytics_marts.workforce_features,PROD)
+  urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
+  urn:li:schemaField:(urn:li:dataset:(urn:li:dataPlatform:postgres,warehouse.analytics_marts.workforce_features,PROD),age)
