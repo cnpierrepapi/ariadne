@@ -35,7 +35,16 @@ select
     cit                                         as citizenship_code,
     nativity                                    as nativity_code,
     dis                                         as disability_code,
-    anc1p                                       as ancestry_code
+    anc1p                                       as ancestry_code,
+
+    -- coverage and benefits. an operational block: which public programmes a person
+    -- is covered by, and what they received. a benefits team needs these and has
+    -- every right to them. none of them is a disability field, and under 65 all of
+    -- them are close to one.
+    pubcov                                      as public_coverage_flag,
+    hins3                                       as medicare_coverage_flag,
+    hins4                                       as medicaid_coverage_flag,
+    ssip                                        as supplementary_security_income_usd
 
 from source
 where agep is not null

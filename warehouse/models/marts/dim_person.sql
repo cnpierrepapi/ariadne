@@ -53,7 +53,13 @@ select
     person.citizenship_code,
     person.nativity_code,
     person.disability_code,
-    person.ancestry_code
+    person.ancestry_code,
+
+    -- coverage and benefits
+    person.public_coverage_flag,
+    person.medicare_coverage_flag,
+    person.medicaid_coverage_flag,
+    person.supplementary_security_income_usd
 
 from person
 left join household

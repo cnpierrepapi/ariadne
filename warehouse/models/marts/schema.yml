@@ -86,6 +86,33 @@ models:
         tags: ["personal_data"]
         meta:
           classification: personal
+      - name: public_coverage_flag
+        description: >
+          Covered by a public health plan, PUMS PUBCOV coding. Personal data, and not a
+          protected characteristic, so a regime that lists forbidden columns does not
+          name it. Below 65 it is close to a disability field without being one:
+          Medicare requires SSDI, end stage renal disease or ALS, and the Medicaid
+          pathways include the Supplemental Security Income route.
+        tags: ["personal_data"]
+        meta:
+          classification: personal
+      - name: medicare_coverage_flag
+        description: Covered by Medicare, PUMS HINS3 coding.
+        tags: ["personal_data"]
+        meta:
+          classification: personal
+      - name: medicaid_coverage_flag
+        description: Covered by Medicaid or another public assistance plan, PUMS HINS4 coding.
+        tags: ["personal_data"]
+        meta:
+          classification: personal
+      - name: supplementary_security_income_usd
+        description: >
+          Supplemental Security Income received over the past 12 months, PUMS SSIP
+          coding. A programme for disabled and older people with limited income.
+        tags: ["personal_data"]
+        meta:
+          classification: personal
 
   - name: income_features
     description: >

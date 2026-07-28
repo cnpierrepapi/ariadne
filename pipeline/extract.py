@@ -29,12 +29,21 @@ WAREHOUSE = os.environ.get(
 )
 
 # Person-level PUMS columns we land. The first block is identity and geography, the
-# second is what the canonical ACSIncome task actually models, and the third is the
-# personal and protected attributes a governance team would tag on sight.
+# second is what the canonical ACSIncome task actually models, the third is the
+# personal and protected attributes a governance team would tag on sight, and the
+# fourth is coverage and benefits.
+#
+# That fourth block is here because the disability literature points at it, not
+# because a model needs it. Public health coverage before 65 is largely disability
+# linked: Medicare under 65 requires SSDI, end stage renal disease or ALS, and the
+# Supplemental Security Income programme is a disability and old age programme. A
+# warehouse that serves benefits administration would carry these as a matter of
+# course, which is exactly what makes them worth watching.
 PERSON_COLS = [
     "SERIALNO", "SPORDER", "ST", "PUMA",
     "AGEP", "COW", "SCHL", "MAR", "OCCP", "POBP", "RELP", "WKHP", "PINCP",
     "SEX", "RAC1P", "DIS", "CIT", "NATIVITY", "ANC1P",
+    "PUBCOV", "HINS3", "HINS4", "SSIP",
 ]
 
 HOUSEHOLD_COLS = [
@@ -121,7 +130,12 @@ def _copy(conn, table: str, frame: pd.DataFrame) -> None:
     frame.to_csv(buf, index=False, header=False, na_rep="")
     buf.seek(0)
     with conn.cursor() as cur:
-        cur.execute(f'DROP TABLE IF EXISTS public."{table}"')
+        # CASCADE because the staging models are views over these tables, so a plain
+        # drop fails on every run after the first and the extract is only re-runnable
+        # by hand. Reloading a source table genuinely does invalidate the views built
+        # on it, and `dbt run` rebuilds them immediately afterwards, which is the step
+        # that follows this one in the pipeline.
+        cur.execute(f'DROP TABLE IF EXISTS public."{table}" CASCADE')
         cur.execute(f'CREATE TABLE public."{table}" ({cols})')
         cur.copy_expert(
             f'COPY public."{table}" FROM STDIN WITH (FORMAT csv, NULL \'\')', buf
