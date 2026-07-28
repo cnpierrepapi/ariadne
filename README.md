@@ -80,6 +80,9 @@ datahub ingest -c ingest/postgres.yml
 
 python tools/verify.py                               # is the thread intact?
 python tools/sentinel.py                             # does any invariant fire?
+
+# file what it found back into the catalog. nothing is written without --raise
+python tools/incident.py --model workforce-classifier --policy employment_us
 ```
 
 ### Why postgres is ingested twice
