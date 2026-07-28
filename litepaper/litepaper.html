@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ariadne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm; }
+
+  :root {
+    --ink: #10151f;
+    --body: #2c3444;
+    --muted: #5c6678;
+    --faint: #8b94a5;
+    --rule: #d9dee7;
+    --rule-2: #eef1f6;
+    --blue: #1f4fd8;
+    --blue-soft: #eef2fd;
+    --alarm: #c0392b;
+    --pos: #1a7f4b;
+    --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", -apple-system, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    font-size: 9.6pt;
+    line-height: 1.55;
+    color: var(--body);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  h1, h2, h3 { color: var(--ink); }
+  p { margin: 0 0 8pt; }
+  b, strong { font-weight: 600; color: var(--ink); }
+  code { font-family: var(--mono); font-size: 8.4pt; color: var(--blue); }
+
+  /* ---------- cover ---------- */
+
+  .cover {
+    height: 245mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+  }
+  .cover .top { border-bottom: 2pt solid var(--ink); padding-bottom: 6pt; }
+  .wordmark {
+    font-family: var(--mono);
+    letter-spacing: 0.42em;
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cover h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 40pt;
+    line-height: 1.02;
+    margin: 0 0 10pt;
+    letter-spacing: -0.01em;
+  }
+  .cover .sub {
+    font-size: 12pt;
+    color: var(--muted);
+    max-width: 128mm;
+    line-height: 1.45;
+    margin: 0;
+  }
+  .cover .mid { padding: 0 0 4mm; }
+
+  .headline {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1pt solid var(--rule);
+    border-bottom: 1pt solid var(--rule);
+    margin: 10mm 0 0;
+  }
+  .headline div { padding: 7pt 10pt 7pt 0; }
+  .headline .n {
+    font-family: var(--serif);
+    font-size: 21pt;
+    color: var(--ink);
+    display: block;
+    line-height: 1.1;
+  }
+  .headline .l {
+    font-family: var(--mono);
+    font-size: 6.6pt;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .cover .foot {
+    font-family: var(--mono);
+    font-size: 7.6pt;
+    color: var(--faint);
+    border-top: 1pt solid var(--rule);
+    padding-top: 6pt;
+    display: flex;
+    justify-content: space-between;
+    gap: 10pt;
+  }
+
+  /* ---------- sections ---------- */
+
+  section { page-break-inside: auto; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 19pt;
+    margin: 0 0 3pt;
+    line-height: 1.12;
+    page-break-after: avoid;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 6.8pt;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    display: block;
+    margin: 0 0 2pt;
+  }
+  .sec {
+    border-top: 1pt solid var(--ink);
+    padding-top: 5pt;
+    margin: 0 0 9pt;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: 9.6pt;
+    font-weight: 600;
+    margin: 11pt 0 4pt;
+    page-break-after: avoid;
+  }
+
+  .lede { font-size: 10.6pt; color: var(--ink); line-height: 1.5; margin-bottom: 9pt; }
+  .two { column-count: 2; column-gap: 9mm; }
+  .two p { margin-bottom: 7pt; }
+
+  .break { page-break-before: always; }
+  .keep { page-break-inside: avoid; }
+
+  /* ---------- callouts ---------- */
+
+  .callout {
+    background: var(--blue-soft);
+    border-left: 2.5pt solid var(--blue);
+    padding: 8pt 11pt;
+    margin: 9pt 0;
+    page-break-inside: avoid;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout.warn { background: #fdf0ee; border-left-color: var(--alarm); }
+
+  pre {
+    font-family: var(--mono);
+    font-size: 7.6pt;
+    line-height: 1.42;
+    background: #f6f8fb;
+    border: 0.6pt solid var(--rule);
+    border-left: 2pt solid var(--faint);
+    padding: 8pt 10pt;
+    margin: 7pt 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    page-break-inside: avoid;
+    color: #333c4d;
+  }
+  pre .c { color: var(--ink); font-weight: 600; }
+  pre .hit { color: var(--alarm); font-weight: 600; }
+  pre .dim { color: var(--faint); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.4pt;
+    margin: 7pt 0;
+    page-break-inside: avoid;
+  }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 6.6pt;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 500;
+    border-bottom: 1pt solid var(--ink);
+    padding: 0 7pt 3pt 0;
+  }
+  td {
+    padding: 4.5pt 7pt 4.5pt 0;
+    border-bottom: 0.6pt solid var(--rule-2);
+    vertical-align: top;
+  }
+  td.v { font-family: var(--mono); color: var(--ink); white-space: nowrap; }
+  td.fire { font-family: var(--mono); color: var(--alarm); font-size: 7.6pt; }
+  td.quiet { font-family: var(--mono); color: var(--faint); font-size: 7.6pt; }
+  td.ok { font-family: var(--mono); color: var(--pos); font-size: 7.6pt; }
+
+  ul, ol { margin: 5pt 0 8pt; padding-left: 14pt; }
+  li { margin-bottom: 4pt; }
+
+  .steps { list-style: none; padding: 0; counter-reset: s; }
+  .steps li {
+    counter-increment: s;
+    padding-left: 20pt;
+    position: relative;
+    margin-bottom: 6pt;
+    page-break-inside: avoid;
+  }
+  .steps li::before {
+    content: counter(s, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 0.5pt;
+    font-family: var(--mono);
+    font-size: 7.4pt;
+    color: var(--blue);
+    font-weight: 600;
+  }
+
+  .chain {
+    font-family: var(--mono);
+    font-size: 7.6pt;
+    line-height: 1.75;
+    margin: 7pt 0;
+    page-break-inside: avoid;
+  }
+  .chain .arrow { color: var(--faint); }
+  .chain .tag { color: var(--blue); }
+
+  .foot-note { font-size: 7.6pt; color: var(--faint); margin-top: 4pt; }
+  a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="top"><span class="wordmark">ARIADNE</span></div>
+
+  <div class="mid">
+    <h1>The model got better,<br>and that was the problem.</h1>
+    <p class="sub">
+      A column entered a feature table. Every test passed and accuracy went up by three and a
+      half points. What also went up was how much the model knew about who is disabled. Only
+      the lineage graph could see both.
+    </p>
+
+    <div class="headline">
+      <div><span class="n">+0.0355</span><span class="l">accuracy gained</span></div>
+      <div><span class="n">+0.0394</span><span class="l">disability recovered</span></div>
+      <div><span class="n">12&times;</span><span class="l">the measured noise</span></div>
+      <div><span class="n">7</span><span class="l">hops to the origin</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Lineage-grounded root cause for production ML, built on DataHub</span>
+    <span>28 July 2026</span>
+  </div>
+</div>
+
+<!-- ============ 1 ============ -->
+<section>
+  <div class="sec"><span class="kicker">01 &middot; the problem</span>
+  <h2>Nobody owns the space between the pipelines</h2></div>
+
+  <p class="lede">
+    Around forty per cent of production machine learning failures trace back to a mismatch
+    between what a pipeline produced and what a model expected. The bug lives in the space
+    between teams, tools and assumptions, which is exactly why nobody owns it until the
+    postmortem.
+  </p>
+
+  <div class="two">
+    <p>
+      That space has a shape. It is a graph: raw tables feeding staging models feeding marts
+      feeding feature tables feeding training runs feeding a deployment. Every real failure of
+      this kind is a path through that graph that nobody looked at.
+    </p>
+    <p>
+      The tools built to watch models cannot see it. Model monitoring watches predictions and
+      tells you a distribution shifted. It has no idea which dbt model changed last Tuesday,
+      because it has never been told the warehouse exists. It can raise the alarm and it can
+      never answer the next question.
+    </p>
+    <p>
+      The tools built to watch data can see it and are not looking at the model. A catalog
+      holds the lineage, the column tags and the ownership. It does not know which model is
+      serving, what that model trained on, or that a column arrived in the feature table
+      between two training runs.
+    </p>
+    <p>
+      Ariadne is the join. It reads the DataHub lineage graph, measures what a deployed model
+      can reconstruct from its features, and writes the finding back into DataHub as an
+      incident on the table it concerns. The measurement supplies the alarm. The graph supplies
+      the cause.
+    </p>
+  </div>
+
+  <div class="callout">
+    <p>
+      <b>The one sentence version.</b> Model observability can tell you that something changed.
+      Ariadne can tell you which column, which file, which commit, and how many hops away it
+      entered, because it is standing on the lineage graph rather than next to it.
+    </p>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <div class="sec"><span class="kicker">02 &middot; the case</span>
+  <h2>What actually happened</h2></div>
+
+  <p>
+    The scenario is not invented. It runs on US Census ACS PUMS data, 378,817 person records
+    and 159,685 households for California in 2018, pulled live through <code>folktables</code>.
+    Two models are trained on it, registered in MLflow and promoted to Production. One predicts
+    income, one predicts whether a working age person holds full time work.
+  </p>
+
+  <h3>Somebody adds one column</h3>
+  <p>
+    Benefits administration asks for a coverage flag so onboarding can skip the enrolment
+    prompt for people who already have cover. It is a reasonable request and the change is one
+    line in a dbt model. No health detail, just a flag.
+  </p>
+
+  <pre>warehouse/models/marts/workforce_features.sql
+
+    household_size,
+    census_region,
+    vehicles_available,
+<span class="c">+   -- benefits admin asked for the coverage flag so onboarding can tell who
++   -- already has cover and skip the enrolment prompt. no health detail,
++   -- just the flag
++   public_coverage_flag,</span></pre>
+
+  <p>
+    The training script takes every column that is not the key or the label, so the column
+    became a feature without anyone deciding it should be one. The model retrains, registers
+    as version 3, and is promoted.
+  </p>
+
+  <table>
+    <thead><tr><th>measure</th><th>version 2</th><th>version 3</th><th>change</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>model accuracy</td><td class="v">0.6955</td><td class="v">0.7310</td><td class="v">+0.0355</td><td class="ok">looks good</td></tr>
+      <tr><td>disability recoverable from features</td><td class="v">0.7489</td><td class="v">0.7883</td><td class="v">+0.0394</td><td class="fire">12&times; noise</td></tr>
+      <tr><td>race, sex, marital status, citizenship</td><td class="v">&mdash;</td><td class="v">&mdash;</td><td class="v">below noise</td><td class="quiet">silent</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <p>
+      <b>This is the whole point.</b> The metric that would normally catch a problem is pointing
+      the wrong way. Accuracy improved, so every dashboard, every model monitor and every
+      approval gate in the building reads this change as an improvement. There is no
+      distribution shift to detect, because nothing drifted. A column arrived.
+    </p>
+  </div>
+
+  <h3>The governance check has nothing to say</h3>
+  <p>
+    Asked under US employment law, the tag-based check returns two findings that were already
+    there yesterday and says nothing about the new column. It is not broken and it is not
+    wrong. Insurance coverage is genuinely not a protected characteristic, so a check that
+    reads labels has nothing to report.
+  </p>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="break">
+  <div class="sec"><span class="kicker">03 &middot; the method</span>
+  <h2>Two questions, asked separately</h2></div>
+
+  <p class="lede">
+    Ariadne asks two different kinds of question about a model, and keeps them apart on
+    purpose. One is about labels and structure. The other is about information. Each catches
+    things the other cannot.
+  </p>
+
+  <h3>Question one: is this model wired to something it should not be</h3>
+  <p>
+    A structural invariant is a provable fact about the graph, not a threshold on a metric.
+    It asks whether a column tagged as restricted flows into a feature of a model the registry
+    says is serving. Both halves matter: a protected column sitting in a warehouse table is
+    normal, and the same column reaching a live decision is what regulation cares about.
+  </p>
+  <p>
+    Deployment is read from the registry, never inferred. The <code>PROD</code> in a model
+    identifier is the environment the entity lives in, not a statement that anything is
+    serving, and treating it as one would report every archived experiment as live.
+  </p>
+
+  <h3>Question two: what can the model rebuild that it does not contain</h3>
+  <p>
+    Removing a protected column is the control most teams believe they have applied. It is
+    only a real control if the remaining columns do not carry the same information. Income,
+    education, occupation and neighbourhood each correlate with race, and enough of them
+    together reconstruct it.
+  </p>
+  <p>
+    So Ariadne measures it directly. Drop the attribute, fit an ordinary model to predict it
+    from everything that remains, and score on held out rows. The output is a number that can
+    be shown to somebody who has to sign off, and checked by somebody who disagrees.
+  </p>
+
+  <div class="callout">
+    <p>
+      <b>Watch the change, not the level.</b> Race sits at 0.73 from an ordinary lending model.
+      Is that bad? Compared to what? Education correlates with race because society does, and
+      no threshold on the level separates that from a fault in the pipeline without an
+      argument. But if the number sits at 0.73 for a year and reaches 0.82 the week somebody
+      edited a dbt model, that is not a fact about society. Something entered the pipeline.
+    </p>
+  </div>
+
+  <h3>The threshold is measured, not chosen</h3>
+  <p>
+    Refitting on a different split moves the number by a standard deviation of about 0.003 on
+    this data. The threshold is four times the observed spread with a floor of 0.02, so roughly
+    seven times the noise. The disability move was 0.0394, twelve times the noise. Nothing was
+    tuned to make the demonstration fire.
+  </p>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+  <div class="sec"><span class="kicker">04 &middot; the graph</span>
+  <h2>Following it back</h2></div>
+
+  <p>
+    The alarm says which attribute moved and which columns the model gained. The graph says
+    where the column came from. Every edge below was produced by a DataHub ingestion connector
+    reading Postgres, the dbt manifest and the MLflow registry. Nothing was hand written, which
+    matters because a graph you wrote yourself proves nothing about whether the approach works.
+  </p>
+
+  <div class="chain">
+    <b>raw_person.pubcov</b> <span class="dim">&nbsp;&nbsp;census extract</span><br>
+    <span class="arrow">&nbsp;&nbsp;&darr;&nbsp; postgres connector</span><br>
+    <b>stg_person.public_coverage_flag</b> <span class="dim">&nbsp;&nbsp;renamed and cleaned</span><br>
+    <span class="arrow">&nbsp;&nbsp;&darr;&nbsp; dbt connector, column level edge</span><br>
+    <b>dim_person.public_coverage_flag</b> <span class="tag">&nbsp;&nbsp;[personal_data]</span><br>
+    <span class="arrow">&nbsp;&nbsp;&darr;&nbsp; dbt connector, column level edge</span><br>
+    <b>workforce_features.public_coverage_flag</b> <span class="dim">&nbsp;&nbsp;no tag here</span><br>
+    <span class="arrow">&nbsp;&nbsp;&darr;&nbsp; mlflow connector, table level edge</span><br>
+    <b>workforce-classifier_3</b> <span class="dim">&nbsp;&nbsp;mlflow_production</span>
+  </div>
+
+  <p>
+    Two things fall out of that chain. The governance tag exists one hop upstream of the
+    feature table and not on the feature table itself, which is the entire gap. And the column
+    is called something else where it enters, so nobody searching the warehouse for
+    <code>public_coverage_flag</code> would ever have found <code>pubcov</code>.
+  </p>
+
+  <h3>The same column, found twice by different means</h3>
+  <p>
+    Which columns count as restricted is declared in a policy pack rather than written into the
+    checks, so the same graph and the same tags produce different verdicts depending only on
+    which statute is named.
+  </p>
+
+  <table>
+    <thead><tr><th>regime</th><th>watches</th><th>verdict on the coverage flag</th></tr></thead>
+    <tbody>
+      <tr><td><code>employment_us</code></td><td>columns tagged as protected attributes</td><td class="quiet">nothing to report</td></tr>
+      <tr><td><code>ecoa</code></td><td>protected bases under fair lending</td><td class="quiet">nothing to report</td></tr>
+      <tr><td><code>eu_ai_act</code></td><td>protected attributes and personal data</td><td class="fire">examine, Article 10(2)(f)</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    So the column is caught twice. Once by measuring information, needing no labels at all.
+    Once by reading a tag, needing no statistics. Two independent routes reaching the same
+    column is the closest thing to corroboration this problem allows.
+  </p>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="break">
+  <div class="sec"><span class="kicker">05 &middot; the agents</span>
+  <h2>Before the change, and after it</h2></div>
+
+  <p class="lede">
+    Two agents, one graph, opposite directions. Neither has a language model in its decision
+    path. That is a choice rather than an omission: the answers are traversals and
+    measurements, so they reproduce exactly, and somebody who disagrees can check them instead
+    of arguing with them.
+  </p>
+
+  <h3>Blast radius, at the pull request</h3>
+  <p>
+    Root cause is the glamorous half and the wrong half to reach for first. By the time anyone
+    runs it, the model is already serving decisions off the thing nobody meant to add. The
+    cheap moment is the pull request, when the change is still a diff and the only cost of
+    knowing is a comment.
+  </p>
+
+  <pre><span class="c">$ python tools/blast.py analytics_marts.dim_person --column public_coverage_flag --policy eu_ai_act</span>
+== blast radius of a change to analytics_marts.dim_person.public_coverage_flag ==
+   read through kit, under Regulation (EU) 2024/1689, Annex III high risk systems
+
+  <span class="hit">examine      in scope because it carries personal_data, and EU AI Act watches that tag.</span>
+
+  reaches 1 deployed model
+    workforce-classifier_3     mlflow_production, 5 hops
+
+  and 1 registered but not serving
+    workforce-classifier_1     mlflow_archived</pre>
+
+  <p>
+    The split between deployed and merely registered is what makes it readable. A change
+    reaching forty registered models and no live one is a completely different change from one
+    reaching a single live model, and a plain downstream count cannot tell them apart.
+  </p>
+
+  <h3>Root cause, after the fact</h3>
+  <p>
+    It starts from the measurement rather than from the diff, because plenty of columns get
+    added that change nothing and listing them all would be a changelog rather than a cause.
+  </p>
+
+  <pre><span class="c">$ python tools/rootcause.py --model workforce-classifier --policy eu_ai_act --via mcp</span>
+  accuracy went up, 0.6955 to 0.7310 (+0.0355)
+  so nothing that watches model quality had a reason to object
+
+  1 measurement moved beyond noise
+    disability (With a disability against Without a disability)
+      0.7489 to 0.7883  +0.0394, 12x the noise
+
+    <span class="hit">public_coverage_flag</span>
+      enters at postgres:raw_person, 7 hops back
+      <span class="hit">called pubcov where it enters, so a search by name would not have found it</span>
+      defined in models/marts/workforce_features.sql
+
+  cause: public_coverage_flag</pre>
+
+  <p>
+    A column, a file, a moment and a rename in one answer. Where it cannot tell two causes
+    apart, it names both and says so. A confident single answer would read better and would be
+    invented.
+  </p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section>
+  <div class="sec"><span class="kicker">06 &middot; datahub</span>
+  <h2>Built on the platform, not beside it</h2></div>
+
+  <p>
+    Every claim Ariadne makes is a claim about the DataHub graph, read through DataHub's own
+    agent surfaces and written back through DataHub's own APIs.
+  </p>
+
+  <table>
+    <thead><tr><th>surface</th><th>what it does here</th><th>result</th></tr></thead>
+    <tbody>
+      <tr><td><b>Context graph</b></td><td>Column level lineage, back to the raw extract and forward to whatever is serving</td><td class="v">7 hops</td></tr>
+      <tr><td><b>Ingestion connectors</b></td><td>postgres, dbt and mlflow. Every edge came from one of them</td><td class="v">3 connectors</td></tr>
+      <tr><td><b>MCP Server</b></td><td>The read path an outside agent would take, as a child process over stdio, tools discovered at the handshake</td><td class="v">6 tools</td></tr>
+      <tr><td><b>Agent Context Kit</b></td><td>The in process read path, and the runtime both agents are built on</td><td class="v">both agents</td></tr>
+      <tr><td><b>Analytics Agent</b></td><td>Its context platform pattern rather than its application: one abstraction per transport, built by a factory</td><td class="v">pattern adopted</td></tr>
+      <tr><td><b>DataHub Skills</b></td><td>An ML impact skill covering the question the existing five do not</td><td class="v">1 authored</td></tr>
+      <tr><td><b>Incidents API</b></td><td>Findings written back where a data team already looks</td><td class="v">9 raised</td></tr>
+      <tr><td><b>Tags and metadata</b></td><td>Governance tags declared in dbt, read back through the sibling graph</td><td class="v">14 columns</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Two transports, checked against each other</h3>
+  <p>
+    The Agent Context Kit runs in process and is fast. The MCP server is a child process spoken
+    to in JSON-RPC, slower, and the honest one, because it is the path a third party agent
+    would actually take. Two read paths are only worth having if they agree, so the same walks
+    run down both and the results are compared: <b>three of three identical</b>. A fast path
+    that quietly returns a shorter answer is worse than no fast path, because every check built
+    on it reports all clear on a smaller graph.
+  </p>
+
+  <h3>The finding lands where somebody will see it</h3>
+  <p>
+    A governance tool that prints to a terminal is a governance tool that gets run once. Nine
+    incidents are live in DataHub, all active, filed on the two feature tables. They appear
+    next to the table in the catalog and show up as a health signal on any lineage walk that
+    passes through, so a later investigation into something else finds the earlier finding on
+    the way past.
+  </p>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="break">
+  <div class="sec"><span class="kicker">07 &middot; the register</span>
+  <h2>Declare the hypothesis before measuring it</h2></div>
+
+  <p class="lede">
+    A plausible story about a column is not evidence about a column. This section exists
+    because the first attempt was a guess and the guess was wrong.
+  </p>
+
+  <p>
+    Vehicles per household went into a feature table because it sounded like a disability
+    proxy: two of the six census disability questions concern mobility, so vehicle access
+    seemed a reasonable stand in. It moved disability by 0.0096, well under the threshold. It
+    moved race, marital status and citizenship instead, and accuracy went up, so every metric
+    said ship it.
+  </p>
+
+  <p>
+    So candidates are now written down first, each with the source of the claim and why it
+    should hold, and only then measured. Recording it beforehand is what stops the screen from
+    becoming a search for whichever column happened to score well, which would find something
+    every time and mean nothing.
+  </p>
+
+  <table>
+    <thead><tr><th>candidate</th><th>basis of the claim</th><th>alone</th><th>adds</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><code>PUBCOV</code></td><td>derived, the union of four public programmes</td><td class="v">0.7020</td><td class="v">+0.0544</td><td class="fire">fires</td></tr>
+      <tr><td><code>HINS4</code></td><td>definitional, the survey question names disability</td><td class="v">0.6650</td><td class="v">+0.0379</td><td class="fire">fires</td></tr>
+      <tr><td><code>SSIP</code></td><td>eligibility rule, SSI is paid on disability or age</td><td class="v">0.5923</td><td class="v">+0.0261</td><td class="quiet">silent</td></tr>
+      <tr><td><code>HINS3</code></td><td>eligibility rule, working age Medicare is disability driven</td><td class="v">0.5948</td><td class="v">+0.0239</td><td class="quiet">silent</td></tr>
+      <tr><td><code>VEH</code></td><td>guess, no source, kept as a control</td><td class="v">0.6201</td><td class="v">+0.0096</td><td class="quiet">silent</td></tr>
+      <tr><td><code>POVPIP</code>, <code>GRPIP</code></td><td>correlational, through the income channel</td><td class="v">&mdash;</td><td class="v">&mdash;</td><td class="quiet">not in this warehouse</td></tr>
+    </tbody>
+  </table>
+
+  <p class="foot-note">
+    244,328 rows, three seeds. The baseline rebuilds disability at 0.7321 before any candidate
+    is added, and the threshold is 0.0222, the same one the alarm fires on.
+  </p>
+
+  <div class="callout">
+    <p>
+      <b>The strongest evidence had no statistics in it.</b> The candidate that fires hardest
+      after the union is Medicaid, and the reason is the wording of the question that collects
+      it: <i>"Medicaid, Medical Assistance, or any government-assistance plan for those with
+      low incomes or a disability"</i>. A respondent living with a disability is being asked, in
+      the same sentence, whether they are the kind of person the programme is for. The
+      association is built into the instrument, and that is far more durable than an effect
+      size from one paper.
+    </p>
+  </div>
+
+  <p>
+    Medicare is the useful failure. It had the better source of the two eligibility rules and
+    it is silent anyway, because the features already present carry most of what it knows. It
+    stays in the register as refuted rather than being deleted, as does the vehicles guess. A
+    register holding only the hypotheses that worked would be a results table.
+  </p>
+</section>
+
+<!-- ============ 8 ============ -->
+<section>
+  <div class="sec"><span class="kicker">08 &middot; without labels</span>
+  <h2>What if nobody tagged the warehouse</h2></div>
+
+  <p>
+    Everything above leans on somebody having tagged the columns, which is the weakest
+    assumption in the design. The columns nobody thought about are exactly the ones that cause
+    trouble. So the question runs the other way too: given a table and no tags at all, which
+    columns hold a human attribute?
+  </p>
+
+  <p>
+    Three rungs, cheapest first, and the escalation is the point. The name is a free string
+    comparison and wrong the moment somebody renames a column. The value distribution is one
+    query and works on a column called <code>q4_resp</code> as well as one called
+    <code>sex</code>. Fitting a model is expensive and is the only rung that finds a column
+    carrying an attribute it does not contain.
+  </p>
+
+  <pre><span class="c">$ python tools/identify.py public.raw_person</span>
+   no tags read, no lineage walked. names and values only.
+
+  identified   rac1p   race           identified   agep    age
+  identified   dis     disability     identified   pobp    place_of_birth
+  identified   sex     sex            identified   anc1p   ancestry
+  identified   cit     citizenship    identified   mar     marital_status
+  identified   nativity  nativity
+
+  <span class="dim">ambiguous    pubcov  disability, nativity, sex
+               several attributes share this code set and the name does not
+               choose between them</span>
+
+  9 identified, 3 ambiguous, 12 with nothing to say</pre>
+
+  <p>
+    Nine of nine, from names and value distributions alone, on codebook abbreviations with no
+    tag ever written. And the coverage flag is honestly ambiguous at the cheap rungs, because
+    it is coded one and two exactly like sex and disability, so it is handed up to the
+    expensive rung rather than guessed at. That expensive rung is the one that found it in the
+    first place.
+  </p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section>
+  <div class="sec"><span class="kicker">09 &middot; limits</span>
+  <h2>Reading this honestly</h2></div>
+
+  <p class="lede">
+    Four things this does not do, stated here rather than left for somebody to find.
+  </p>
+
+  <ol>
+    <li>
+      <b>It does not decide legality.</b> Correlation with a protected attribute is not
+      prohibited and cannot be, because income and education correlate with race, and a model
+      stripped of everything correlated with race predicts nothing at all. What the law asks is
+      whether a practice causes harm, whether the business need justifies it, and whether a
+      less harmful alternative exists. Those are human decisions. This supplies one input.
+    </li>
+    <li>
+      <b>It is not fully label free.</b> Knowing that <code>disability_code</code> means
+      disability came from a declared policy file. Lineage carries that one fact everywhere
+      afterwards, so you have to be right once, but once is not zero.
+    </li>
+    <li>
+      <b>Public coverage is not purely disability.</b> In California after Medicaid expansion it
+      also tracks low income. Medicare below sixty five is the cleaner channel and is weaker
+      here. The register records both.
+    </li>
+    <li>
+      <b>The level is arguable, the change is not.</b> This is why the alarm watches movement
+      against measured noise rather than asserting a threshold on the level, and why every
+      finding names the columns that arrived alongside it.
+    </li>
+  </ol>
+
+  <h3>The dataset is de-identified, and that is fine</h3>
+  <p>
+    ACS PUMS carries no names or emails. Personal data here means protected and personal
+    attributes tagged under a governance policy, which is what real governance teams manage and
+    what fair lending law regulates. The failure mode is native rather than contrived: the
+    canonical <code>folktables</code> income task ships with race and sex in its standard
+    feature list, so no scenario had to be invented.
+  </p>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="break">
+  <div class="sec"><span class="kicker">10 &middot; back to the project</span>
+  <h2>Four things that were not in the documentation</h2></div>
+
+  <p>
+    Each one fails silently, which is why they were worth writing up rather than working around
+    quietly. A loud failure teaches you something the first time. These teach you nothing until
+    much later.
+  </p>
+
+  <ol class="steps">
+    <li>
+      <b>The MCP server stalls before the handshake.</b> It posts a usage ping before answering
+      <code>initialize</code>. Where that host is unreachable the send retries for about forty
+      seconds, and because it happens before the protocol starts, the client sees no error and
+      no response at all. Common on air-gapped hosts and on any cloud instance whose egress
+      rules allow the catalog endpoint but not general outbound traffic.
+      <span class="foot-note">datahub#18684</span>
+    </li>
+    <li>
+      <b>Incidents do not attach to an ML model.</b> The documentation said "dataset, dashboard,
+      chart, dataFlow, etc" and the "etc" is not open ended. Seven entity types carry the
+      aspect and no ML entity is among them. The feature table turned out to be the better home
+      anyway, since that is where a fix goes.
+      <span class="foot-note">datahub#18685</span>
+    </li>
+    <li>
+      <b>An ML impact skill.</b> The registry covers lineage, search, enrichment and quality.
+      None cover whether a warehouse change reaches something that is serving. The skill
+      carries all four traps found here, so an agent following it gets the answer rather than
+      the plausible version of it.
+      <span class="foot-note">datahub-skills#66</span>
+    </li>
+    <li>
+      <b>The Agent Context Kit cannot import its own registration module</b> against the
+      dependency version it pins, so the LangChain and Google ADK paths fail on a clean
+      install. The tool functions are unaffected and were used throughout.
+      <span class="foot-note">datahub#18686</span>
+    </li>
+  </ol>
+
+  <h3>And two the build had to survive</h3>
+  <p>
+    <b>Ingest order changes what the graph contains.</b> The mlflow connector overwrites the
+    warehouse entity's schema with the training frame's columns, so postgres has to run after
+    mlflow. The dbt source resolves <code>select *</code> against the schema DataHub already
+    holds, so postgres also has to run before dbt. The order is postgres, dbt, mlflow, postgres.
+    One column tracing and nine not is a bug you find. Nine tracing and one not is a bug you
+    ship.
+  </p>
+  <p>
+    <b>A table exists three times and only one copy has the tags.</b> dbt, the warehouse and the
+    ML platform each hold their own entity, joined as siblings. Governance tags land on the dbt
+    entity and lineage traversal returns the warehouse one. Ask the wrong sibling whether a
+    column is protected and the answer is no, with no error. This is the most likely way to
+    ship a governance check that looks like it works and does not.
+  </p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section>
+  <div class="sec"><span class="kicker">11 &middot; the shape of it</span>
+  <h2>How it is put together</h2></div>
+
+  <table>
+    <thead><tr><th>layer</th><th>what it is</th></tr></thead>
+    <tbody>
+      <tr><td><code>pipeline/extract.py</code></td><td>Pulls census person, household and geography records into Postgres</td></tr>
+      <tr><td><code>warehouse/</code></td><td>dbt project. Staging renames codes, marts join and derive, feature tables feed models</td></tr>
+      <tr><td><code>ml/train.py</code></td><td>Trains and registers the classifiers, logging the feature list and the source table</td></tr>
+      <tr><td><code>ingest/</code></td><td>DataHub recipes for the three connectors</td></tr>
+      <tr><td><code>policy/</code></td><td>Declared regimes. Attributes, bases, citations. Three statutes over one warehouse</td></tr>
+      <tr><td><code>tools/context.py</code></td><td>The read layer. Two transports behind one interface, tools discovered not assumed</td></tr>
+      <tr><td><code>tools/trace.py</code></td><td>Column traversal, sibling resolution, restricted attribute reachability</td></tr>
+      <tr><td><code>tools/sentinel.py</code></td><td>Structural invariants over the graph</td></tr>
+      <tr><td><code>tools/reconstruct.py</code></td><td>Measures what the features can rebuild that the model excludes</td></tr>
+      <tr><td><code>tools/exposure.py</code></td><td>Records that measurement over time and fires when it moves past the noise</td></tr>
+      <tr><td><code>tools/blast.py</code></td><td>Forward walk before a change lands. Emits a pull request comment</td></tr>
+      <tr><td><code>tools/rootcause.py</code></td><td>Backward walk after one did. Names the column, the file and the moment</td></tr>
+      <tr><td><code>tools/screen.py</code></td><td>Measures the declared proxy register</td></tr>
+      <tr><td><code>tools/identify.py</code></td><td>Works out what a column holds with no tags at all</td></tr>
+      <tr><td><code>tools/incident.py</code></td><td>Writes findings back into DataHub. Nothing without an explicit flag</td></tr>
+      <tr><td><code>tools/agree.py</code></td><td>Checks the two read paths return the same graph</td></tr>
+      <tr><td><code>research/proxies.yml</code></td><td>The hypothesis register, with sources, refuted entries kept</td></tr>
+      <tr><td><code>state/exposure.json</code></td><td>Measurement history, which doubles as the record keeping trail</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Running on a single EC2 instance: DataHub v1.5, Postgres, MLflow and dbt. The census data
+    is pulled live from the Census API and nothing is redistributed, which keeps the licensing
+    position clean. Apache 2.0 throughout.
+  </p>
+
+  <div class="callout">
+    <p>
+      <b>Where to look first.</b> The recorded run, start to finish, with every command and its
+      unedited output, is at <b>ariadne-five.vercel.app</b>. Each step links to a page proving
+      the DataHub surface it used. The code is at
+      <b>github.com/cnpierrepapi/ariadne</b>.
+    </p>
+  </div>
+</section>
+
+</body>
+</html>
