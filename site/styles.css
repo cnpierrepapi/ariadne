@@ -118,37 +118,35 @@ a:hover { color: #fff; }
   border-bottom: 1px solid var(--line);
 }
 
-.rail { position: relative; padding-top: 44px; }
+.rail { position: relative; padding-top: 42px; }
 
 .rail .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   font-family: var(--mono);
   font-size: 12px;
-  color: var(--muted-2);
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  color: var(--paper);
+  background: var(--ink-3);
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
 }
 
+/* the line starts under the number, never through it */
 .rail .tick {
   position: absolute;
-  left: 5px;
-  top: 74px;
+  left: 15px;
+  top: 80px;
   bottom: 0;
   width: 1px;
-  background: var(--line-2);
+  background: var(--line);
 }
 
-.rail .tick::before {
-  content: "";
-  position: absolute;
-  left: -3.5px;
-  top: -14px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--line-2);
-}
-
-.rail .tick.fire { background: linear-gradient(180deg, var(--alarm), var(--line-2) 40%); }
-.rail .tick.fire::before { background: var(--alarm); box-shadow: 0 0 0 4px rgba(255, 90, 77, 0.16); }
+.rail .tick.fire { background: linear-gradient(180deg, var(--alarm), var(--line) 45%); }
+.step.alarm .rail .num { border-color: var(--alarm); color: var(--alarm); }
 
 .body { padding: 40px 0 clamp(44px, 5vw, 70px); min-width: 0; }
 
@@ -186,7 +184,7 @@ a:hover { color: #fff; }
   border-left: 2px solid var(--line-2);
   border-radius: 3px;
   font-size: 12.5px;
-  line-height: 1.72;
+  line-height: 1.5;
   overflow-x: auto;
   white-space: pre;
   color: #b9c3d6;
@@ -311,8 +309,8 @@ footer {
 
 @media (max-width: 820px) {
   :root { --rail: 44px; }
-  .rail { padding-top: 34px; }
-  .rail .tick { top: 62px; }
+  .rail { padding-top: 32px; }
+  .rail .tick { top: 68px; left: 15px; }
   .body { padding-top: 30px; }
   .env > div { grid-template-columns: minmax(0, 1fr); }
   .env dt { padding-bottom: 0; }
