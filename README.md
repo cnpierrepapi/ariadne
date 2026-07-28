@@ -128,6 +128,21 @@ python tools/reconstruct.py --model income-classifier --per-feature race_code
 python tools/exposure.py record
 python tools/exposure.py check --fail-on-violation
 python tools/exposure.py history
+
+# read the catalog through DataHub's own agent surfaces, either transport
+python tools/context.py --via mcp                # what the MCP server offers
+python tools/agree.py                            # do the two surfaces agree
+
+# the two agents
+python tools/blast.py analytics_marts.dim_person --column public_coverage_flag \
+    --policy eu_ai_act --comment                 # before the change lands
+python tools/rootcause.py --model workforce-classifier --via mcp   # after it did
+
+# measure the declared proxy hypotheses, and let most of them fail
+python tools/screen.py
+
+# work out what a column holds with no tags at all
+python tools/identify.py public.raw_person
 ```
 
 `--fail-on-violation` exits non zero, so `sentinel.py` drops into CI as a gate on a
@@ -163,6 +178,18 @@ dbt or training pipeline.
 
 For how the traversal actually works, and the three graph shapes that make a naive
 walk give a confident wrong answer, see [TECHNICAL.md](TECHNICAL.md).
+
+## Contributed back
+
+Four things this build hit that were not in the documentation. Each one fails
+silently, which is why they were worth writing up rather than working around.
+
+| | Where |
+| --- | --- |
+| The self-hosted MCP server stalls before answering `initialize` where its telemetry host is unreachable, and the trimmed responses omit `type` from search results | [datahub#18684](https://github.com/datahub-project/datahub/pull/18684) |
+| `raiseIncident` accepts seven entity types and no ML entity, where the docs said "dataset, dashboard, chart, dataFlow, etc" | [datahub#18685](https://github.com/datahub-project/datahub/pull/18685) |
+| An ML impact skill, covering the question the existing five skills do not, with four quiet failure modes written into it | [datahub-skills#66](https://github.com/datahub-project/datahub-skills/pull/66) |
+| `datahub-agent-context` cannot import its own LangChain registration against the `acryl-datahub` version it pins | [datahub#18686](https://github.com/datahub-project/datahub/issues/18686) |
 
 ## Status
 

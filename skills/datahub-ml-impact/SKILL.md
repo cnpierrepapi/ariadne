@@ -18,14 +18,42 @@ different, and each one has a specific way of failing quietly.
 
 ---
 
+## Multi-Agent Compatibility
+
+This skill is designed to work across multiple coding agents.
+
+**What works everywhere:** the whole workflow. It uses only the DataHub CLI and
+the MCP server, both of which every agent can reach.
+
+**Agent-specific:** `allowed-tools` in the YAML frontmatter above is read by some
+agents and safely ignored by others.
+
+**Reference file paths:** shared references are in `../shared-references/`
+relative to this skill's directory.
+
+---
+
+## CLI Attribution
+
+When running `datahub` CLI commands, pass `-C skill=datahub-ml-impact` on the
+root command so usage can be attributed:
+
+```bash
+datahub -C skill=datahub-ml-impact lineage --urn "..." --direction downstream
+```
+
+If `-C` is not recognized, omit it. The command works the same without it.
+
+---
+
 ## Not This Skill
 
-| If the user wants to... | Use this instead |
-| --- | --- |
+| If the user wants to...                | Use this instead   |
+| -------------------------------------- | ------------------ |
 | Trace lineage between tables generally | `/datahub-lineage` |
-| Find an entity or ask who owns it | `/datahub-search` |
-| Set tags, owners or descriptions | `/datahub-enrich` |
-| Manage assertions and incidents | `/datahub-quality` |
+| Find an entity or ask who owns it      | `/datahub-search`  |
+| Set tags, owners or descriptions       | `/datahub-enrich`  |
+| Manage assertions and incidents        | `/datahub-quality` |
 
 **Key boundary:** this skill only earns its place when a model is on one end of
 the question. If nothing downstream is a model, `/datahub-lineage` is the better

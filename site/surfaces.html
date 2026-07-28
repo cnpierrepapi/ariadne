@@ -138,9 +138,34 @@
       better home anyway, since that is where a fix goes.
     </li>
   </ul>
-  <p class="cite">
-    All four are being written up as contributions back to the DataHub project.
-  </p>
+  <h3>All four went back to the project</h3>
+  <div class="table-scroll">
+    <table style="min-width:640px">
+      <thead><tr><th>contribution</th><th>what it fixes</th><th>where</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>MCP self-hosted troubleshooting</td>
+          <td>The stall before <code>initialize</code>, and the trimmed <code>type</code> field</td>
+          <td><a href="https://github.com/datahub-project/datahub/pull/18684">datahub#18684</a></td>
+        </tr>
+        <tr>
+          <td>Incidents supported entity types</td>
+          <td>Replaces "dataset, dashboard, chart, dataFlow, etc" with the seven that actually work, and says ML entities are not among them</td>
+          <td><a href="https://github.com/datahub-project/datahub/pull/18685">datahub#18685</a></td>
+        </tr>
+        <tr>
+          <td>An ML impact skill</td>
+          <td>The question the existing five skills do not cover, with all four traps written in</td>
+          <td><a href="https://github.com/datahub-project/datahub-skills/pull/66">datahub-skills#66</a></td>
+        </tr>
+        <tr>
+          <td>Agent Context Kit import bug</td>
+          <td>Its LangChain registration cannot import against the acryl-datahub version it pins</td>
+          <td><a href="https://github.com/datahub-project/datahub/issues/18686">datahub#18686</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <footer>
