@@ -1,0 +1,14 @@
+== reconstructability of a protected attribute moved ==
+   workforce-classifier v1 recorded 2026-07-27T13:21:25+00:00
+   workforce-classifier v2 recorded 2026-07-27T13:30:31+00:00
+   features gained: vehicles_available
+   model accuracy 0.6854 to 0.6955 (+0.0101)
+
+  marital_status: Separated against Married
+    0.7487 to 0.7823  (+0.0337, 5 times the measured noise of 0.0067)
+  race: Black alone against White alone
+    0.6851 to 0.7105  (+0.0254, 6 times the measured noise of 0.0040)
+  citizenship: Not a citizen against Born in the United States
+    0.7835 to 0.8055  (+0.0219, 15 times the measured noise of 0.0014)
+
+  the deployed model gained vehicles_available between these recordings, which is where to look first

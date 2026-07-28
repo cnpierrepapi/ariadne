@@ -31,6 +31,9 @@ select
 
     household_size,
     census_region,
+    -- requested by workforce ops for commute feasibility, so roles that need
+    -- reliable on site attendance can be prioritised sensibly
+    vehicles_available,
 
     case when hours_worked_per_week >= 35 then 1 else 0 end as works_full_time
 
