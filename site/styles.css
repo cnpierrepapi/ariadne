@@ -259,13 +259,19 @@ section p { margin: 0 0 18px; }
   font-size: 15px;
 }
 
+/* the caption is a file path, which has no spaces to wrap at. without this it
+   sets its own min width and pushes the whole page wider than a 320px phone. */
 .caption {
   font-family: var(--mono);
   font-size: 11.5px;
   color: var(--muted-2);
   letter-spacing: 0.05em;
   margin-top: 12px;
+  overflow-wrap: anywhere;
 }
+
+/* trailing paragraphs already have section padding under them */
+section > p:last-child { margin-bottom: 0; }
 
 /* ---------- the change: 55/45 split ---------- */
 
