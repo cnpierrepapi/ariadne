@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the run</title>
+<meta name="description" content="A recorded run: one column enters a feature table, accuracy improves, and the only thing that notices is lineage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">overview</a>
+    <a href="/run" class="here">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="preamble">
+  <h1>A run, start to finish</h1>
+  <p>
+    Somebody adds one column to a feature table used by a model that decides something
+    about a worker. Every test passes. Accuracy improves. This is what each check said,
+    in the order it was asked, with the output left as it came out.
+  </p>
+  <dl class="env">
+    <div><dt>warehouse</dt><dd>Postgres, 378,817 census person records, California 2018, built by dbt</dd></div>
+    <div><dt>models</dt><dd>income-classifier v3 and workforce-classifier v3, both in the MLflow registry at stage Production</dd></div>
+    <div><dt>catalog</dt><dd>DataHub v1.5, lineage ingested by the postgres, dbt and mlflow connectors, nothing hand written</dd></div>
+    <div><dt>read through</dt><dd>the DataHub MCP server and the Agent Context Kit, checked against each other on <a href="/agents">every walk</a></dd></div>
+    <div><dt>run</dt><dd>28 July 2026</dd></div>
+  </dl>
+</section>
+
+<!-- 1 -->
+<section class="step" id="s1">
+  <div class="rail"><span class="num">01</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>The change</h2>
+    <p class="note">One line in a dbt model. The comment is the one that was actually written.</p>
+    <pre class="term diff"><code><span class="fileline">warehouse/models/marts/workforce_features.sql</span>
+<span class="ctx">    household_size,</span>
+<span class="ctx">    census_region,</span>
+<span class="ctx">    vehicles_available,</span>
+<span class="add">+   -- benefits admin asked for the coverage flag so onboarding can tell who</span>
+<span class="add">+   -- already has cover and skip the enrolment prompt. no health detail,</span>
+<span class="add">+   -- just the flag</span>
+<span class="add">+   public_coverage_flag,</span>
+<span class="ctx"></span>
+<span class="ctx">    case when hours_worked_per_week >= 35 then 1 else 0 end as works_full_time</span></code></pre>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="step" id="s2">
+  <div class="rail"><span class="num">02</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Retrain, register, promote</h2>
+    <p class="note">
+      Nothing in the training script mentions the new column. It takes every column that
+      is not the key or the label, so the column became a feature by itself.
+    </p>
+    <pre class="term"><code><span class="cmd">python ml/train.py --feature-table analytics_marts.workforce_features \
+    --label works_full_time --model-name workforce-classifier</span>
+training on 244,328 rows, 7 features
+  age, education_level_code, marital_status_code, household_size,
+  census_region, vehicles_available, public_coverage_flag
+  accuracy 0.7310  roc_auc 0.7811
+  registered as workforce-classifier
+Created version '3' of model 'workforce-classifier'.</code></pre>
+    <p class="readout">
+      Accuracy was <b>0.6955</b> before the change and <b class="pos">0.7310</b> after.
+      A three and a half point gain. On every dashboard in the building this change is
+      an improvement.
+    </p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="step" id="s3">
+  <div class="rail"><span class="num">03</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Ask the governance check first</h2>
+    <p class="note">
+      It walks column lineage and reads governance tags, under US employment law. Watch
+      what it does not say.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/sentinel.py --policy employment_us</span>
+== restricted attribute reaches a deployed model ==
+   under Title VII of the Civil Rights Act, the ADA, and the ADEA
+   watching columns tagged protected_attribute
+
+  workforce-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 10 columns, 1 prohibited, 1 examine
+    prohibited   age                    tagged on the feature itself
+                 age, 29 USC 623, ADEA
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Not a federally protected class in employment</code></pre>
+    <p class="readout">
+      Two findings, both of which were already there yesterday. Nothing about
+      <code>public_coverage_flag</code>. The check is not broken and it is not wrong.
+      Insurance coverage is genuinely not a protected characteristic, so a check that
+      reads labels has nothing to report.
+    </p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="step alarm" id="s4">
+  <div class="rail"><span class="num">04</span><span class="tick fire"></span></div>
+  <div class="body">
+    <h2>Ask what the model can rebuild</h2>
+    <p class="note">
+      This one fits a model to recover each protected attribute from the features the
+      deployed model does hold, with the attribute itself excluded, and compares against
+      the last recording.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/exposure.py check --model workforce-classifier</span>
+== reconstructability of a protected attribute moved ==
+   workforce-classifier v2 recorded 2026-07-27T13:30:31+00:00
+   workforce-classifier v3 recorded 2026-07-28T08:34:06+00:00
+   features gained: public_coverage_flag
+   model accuracy 0.6955 to 0.7310 (+0.0355)
+
+  <span class="hit">disability: With a disability against Without a disability
+    0.7489 to 0.7883  (+0.0394, 12 times the measured noise of 0.0033)</span>
+
+  the deployed model gained public_coverage_flag between these recordings,
+  which is where to look first</code></pre>
+    <p class="readout">
+      One finding. Every other attribute held still, and the silence is what makes the
+      one that moved worth reading. The threshold is measured rather than chosen: four
+      times the spread observed across refits, floored at 0.02.
+    </p>
+    <a class="proof" href="/register">why this column was a candidate at all</a>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="step" id="s5">
+  <div class="rail"><span class="num">05</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Follow the column back</h2>
+    <p class="note">
+      It is untagged where the model reads it. The question is whether the warehouse
+      knew anything about it further upstream.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/trace.py column warehouse.analytics_marts.workforce_features \
+    public_coverage_flag</span>
+warehouse.analytics_marts.workforce_features.public_coverage_flag
+  1 hop   warehouse.analytics_marts.dim_person.public_coverage_flag   [personal_data]
+  2 hops  warehouse.analytics_staging.stg_person.public_coverage_flag
+  3 hops  warehouse.public.raw_person.pubcov</code></pre>
+    <p class="readout">
+      Three hops to <code>pubcov</code>, the real census variable name, and a governance
+      tag one hop back that the feature table never carried. Every edge here came out of
+      a DataHub connector reading dbt, Postgres and MLflow.
+    </p>
+    <a class="proof" href="/graph">the graph, and how it was ingested</a>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="step" id="s6">
+  <div class="rail"><span class="num">06</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Same graph, different statute</h2>
+    <p class="note">
+      Nothing changes except which policy pack is named. The EU AI Act asks for
+      examination of bias affecting fundamental rights rather than listing forbidden
+      columns, so it watches personal data too.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/sentinel.py --policy eu_ai_act</span>
+== restricted attribute reaches a deployed model ==
+   under Regulation (EU) 2024/1689, Annex III high risk systems
+   watching columns tagged protected_attribute, personal_data
+
+  workforce-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 10 columns, 3 examine
+    examine      age                    tagged on the feature itself
+    examine      marital_status_code    tagged on the feature itself
+    <span class="hit">examine      public_coverage_flag   dim_person.public_coverage_flag, 1 hop back
+                 in scope because it carries personal_data</span></code></pre>
+    <p class="readout">
+      The same column, found a second time by a completely different route. One route
+      needed no labels at all. The other needed no statistics. Getting the same answer
+      twice by different means is the closest thing to corroboration this problem allows.
+    </p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="step" id="s7">
+  <div class="rail"><span class="num">07</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>File it where somebody will see it</h2>
+    <p class="note">Nothing is written without <code>--raise</code>.</p>
+    <pre class="term"><code><span class="cmd">python tools/incident.py --model workforce-classifier \
+    --policy employment_us --raise</span>
+== 3 finding(s) for workforce-classifier under Title VII, the ADA, and the ADEA ==
+
+  [filing] CRITICAL age reaches workforce-classifier_3
+      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
+      raised urn:li:incident:ac291971-4ca5-41b1-9acb-0c58f9ed511a
+  [filing] LOW      marital_status_code reaches workforce-classifier_3
+      raised urn:li:incident:305c0844-755e-4fdb-a782-8b9c653be4da
+  [filing] HIGH     disability (With a disability) became easier to rebuild
+      raised urn:li:incident:107fdb6a-680d-45d7-a670-122736c40b50</code></pre>
+    <p class="note tight">Read back through the DataHub front end, logged in as a user:</p>
+    <pre class="term"><code><span class="cmd">POST /api/v2/graphql  { dataset(urn: "...workforce_features") { incidents } }</span>
+{"data":{"dataset":{"name":"workforce_features","incidents":{"total":3,
+ "incidents":[
+   {"title":"disability (With a disability) became easier to rebuild from
+             workforce-classifier","priority":"HIGH","status":{"state":"ACTIVE"}},
+   {"title":"marital_status_code reaches workforce-classifier_3",...},
+   {"title":"age reaches workforce-classifier_3","priority":"CRITICAL",...}]}}}}</code></pre>
+    <p class="readout">
+      Filed on the feature table, not the model. DataHub v1.5 rejects an incident on an
+      mlModel urn at the entity layer. The table is the better home anyway: it is where
+      the column entered and where a fix goes.
+    </p>
+    <a class="proof" href="/incidents">all nine incidents, read back from DataHub</a>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="step" id="s8">
+  <div class="rail"><span class="num">08</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Now take the tags away</h2>
+    <p class="note">
+      Everything above leaned on somebody having tagged the warehouse. So here is the
+      raw census extract, where the column names are codebook abbreviations and no tag
+      has ever been written.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/identify.py public.raw_person</span>
+== what does public.raw_person hold ==
+   no tags read, no lineage walked. names and values only.
+
+  identified   rac1p        race          name and values agree
+  identified   dis          disability    name and values agree
+  identified   sex          sex           name and values agree
+  identified   cit          citizenship   name and values agree
+  identified   mar          marital_status  name and values agree
+  identified   nativity     nativity      name and values agree
+  identified   agep         age           name only
+  identified   pobp         place_of_birth  name only
+  identified   anc1p        ancestry      name only
+
+  <span class="dim">ambiguous    pubcov       disability, nativity, sex
+               several attributes share this code set and the name does not
+               choose between them
+               escalate to reconstruct.py, which does not need the name</span>
+
+  9 identified, 3 ambiguous, 12 with nothing to say</code></pre>
+    <p class="readout">
+      Nine of nine, from names and value distributions alone. And the coverage flag is
+      still ambiguous here, because it is coded one and two exactly like sex and
+      disability. The cheap rungs say so and hand it to the expensive one, which is the
+      rung that found it in step 4.
+    </p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="step" id="s9">
+  <div class="rail"><span class="num">09</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Ask it as a question instead</h2>
+    <p class="note">
+      Everything above is a check that runs. This is the same evidence asked for as a
+      question, by an agent reading the catalog through DataHub's own MCP server rather
+      than through any query of ours.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/rootcause.py --model workforce-classifier --policy eu_ai_act --via mcp</span>
+== why did workforce-classifier move ==
+   read through mcp, under Regulation (EU) 2024/1689, Annex III high risk systems
+   comparing version 2 (2026-07-27T13:30:31) with version 3 (2026-07-28T08:34:06)
+
+  accuracy went up, 0.6955 to 0.7310 (+0.0355)
+  so nothing that watches model quality had a reason to object
+
+  1 measurement moved beyond noise
+    disability (With a disability against Without a disability)  0.7489 to 0.7883  +0.0394, 12x the noise
+
+  the deployed model gained 1 column between those two moments
+
+    <span class="hit">public_coverage_flag</span>
+      examine, in scope by tag, Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+      enters at postgres:raw_person, 7 hops back
+      <span class="hit">called pubcov where it enters, so a search by name would not have found it</span>
+      defined in models/marts/dim_person.sql
+      defined in models/marts/workforce_features.sql
+      defined in models/staging/sources.yml
+      defined in models/staging/stg_person.sql
+
+  cause: public_coverage_flag</code></pre>
+    <p class="readout">
+      A column, a file, a moment and a rename, in one answer. The rename is the part a
+      person could not have searched for: the column is called
+      <code>public_coverage_flag</code> where the alarm fired and <code>pubcov</code>
+      where it enters the warehouse.
+    </p>
+    <a class="proof" href="/agents">both agents, and the check that the two surfaces agree</a>
+  </div>
+</section>
+
+<!-- appendix -->
+<section class="appendix">
+  <h2>Why that column</h2>
+  <p class="note">
+    The first attempt guessed. A commute field, vehicles per household, seemed a
+    plausible stand in for disability. It moved the number <b>+0.0096</b>, well under the
+    threshold, and the alarm stayed silent, correctly. So the candidates were written
+    down first with a source against each, then measured on 244,328 rows over three
+    seeds. Only two of the five that could be tested survived.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>candidate</th><th>what it is</th><th>alone</th><th>adds</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><code>PUBCOV</code></td><td>any public health coverage</td><td class="v">0.7020</td><td class="v">+0.0544</td><td class="a">fires</td></tr>
+        <tr><td><code>HINS4</code></td><td>Medicaid, whose survey question names disability</td><td class="v">0.6650</td><td class="v">+0.0379</td><td class="a">fires</td></tr>
+        <tr><td><code>SSIP</code></td><td>supplemental security income</td><td class="v">0.5923</td><td class="v">+0.0261</td><td class="n">silent</td></tr>
+        <tr><td><code>HINS3</code></td><td>Medicare, disability driven below 65</td><td class="v">0.5948</td><td class="v">+0.0239</td><td class="n">silent</td></tr>
+        <tr><td><code>VEH</code></td><td>vehicles available, the guess</td><td class="v">0.6201</td><td class="v">+0.0096</td><td class="n">silent</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    Medicare is the useful failure. It had the better source of the two eligibility rules
+    and it is silent anyway, because the features already present carry most of what it
+    knows. A published association is a hypothesis about your warehouse, never a fact
+    about it. It stays in the register as refuted rather than being deleted.
+  </p>
+  <a class="proof" href="/register">the register, with every source</a>
+</section>
+
+<section class="caveats">
+  <h2>Reading this honestly</h2>
+  <ul>
+    <li><b>It does not decide legality.</b> Correlation with a protected attribute is not prohibited and cannot be. The law asks about harm, business necessity and less harmful alternatives, and those are human calls.</li>
+    <li><b>Not fully label free.</b> Knowing <code>disability_code</code> means disability came from a declared policy file. Lineage carries that one fact everywhere after, so you have to be right once, but once is not zero.</li>
+    <li><b>Public coverage is not purely disability.</b> In California after Medicaid expansion it also tracks low income. Medicare below 65 is the cleaner channel.</li>
+    <li><b>The level is arguable, the change is not.</b> Race sits at 0.73 from an ordinary lending model, which may be plain socioeconomic correlation. That is why the alarm watches movement.</li>
+  </ul>
+</section>
+
+<section class="block" style="max-width:none">
+  <span class="label">the proof, one page per part</span>
+  <h2>Every DataHub surface this used</h2>
+  <p class="lede">
+    The run above is the argument. These are the parts of DataHub it was built on, each
+    with the output it actually returned on this instance.
+  </p>
+  <div class="cards">
+    <a class="card" href="/surfaces">
+      <span class="label">index</span>
+      <h3>All surfaces</h3>
+      <p>Every part of DataHub, what it was used for, and whether it is live.</p>
+      <span class="metric">8 surfaces</span>
+    </a>
+    <a class="card" href="/mcp">
+      <span class="label">mcp server</span>
+      <h3>MCP</h3>
+      <p>The official server as a child process over stdio, tools discovered not assumed.</p>
+      <span class="metric">6 tools discovered</span>
+    </a>
+    <a class="card" href="/agents">
+      <span class="label">agent context kit</span>
+      <h3>Agents</h3>
+      <p>Blast radius before a change, root cause after one, over either transport.</p>
+      <span class="metric">3 of 3 walks agree</span>
+    </a>
+    <a class="card" href="/graph">
+      <span class="label">context graph</span>
+      <h3>Graph</h3>
+      <p>Lineage ingested by three connectors, policy packs, and column identification.</p>
+      <span class="metric">7 hops, column level</span>
+    </a>
+    <a class="card" href="/incidents">
+      <span class="label">incidents api</span>
+      <h3>Incidents</h3>
+      <p>Findings written back into DataHub and read out again through the front end.</p>
+      <span class="metric">9 raised, all active</span>
+    </a>
+    <a class="card" href="/skill">
+      <span class="label">datahub skills</span>
+      <h3>Skill</h3>
+      <p>An ML impact skill in the registry format, carrying the four traps we hit.</p>
+      <span class="metric">4 failure modes encoded</span>
+    </a>
+    <a class="card" href="/register">
+      <span class="label">research</span>
+      <h3>Register</h3>
+      <p>Proxy hypotheses declared with sources before measurement, most of them refuted.</p>
+      <span class="metric">2 of 5 survived</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne">github.com/cnpierrepapi/ariadne</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/tree/master/examples">the raw output on this page</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/TECHNICAL.md">technical notes</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/EU_AI_ACT.md">EU AI Act mapping</a>
+  </div>
+</footer>
+
+</body>
+</html>
