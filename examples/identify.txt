@@ -1,0 +1,74 @@
+### the raw census extract: opaque codebook names, nothing tagged
+
+== what does public.raw_person hold ==
+   no tags read, no lineage walked. names and values only.
+
+  identified   agep                               age
+               name: the name says so and the values could not be profiled
+  identified   mar                                marital_status
+               name and values: the name and the values agree
+  identified   pobp                               place_of_birth
+               name: the name says so and the values could not be profiled
+  identified   sex                                sex
+               name and values: the name and the values agree
+  identified   rac1p                              race
+               name and values: the name and the values agree
+  identified   dis                                disability
+               name and values: the name and the values agree
+  identified   cit                                citizenship
+               name and values: the name and the values agree
+  identified   nativity                           nativity
+               name and values: the name and the values agree
+  identified   anc1p                              ancestry
+               name: the name says so and the values could not be profiled
+
+  ambiguous    pubcov                             disability, nativity, sex
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+  ambiguous    hins3                              disability, nativity, sex
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+  ambiguous    hins4                              disability, nativity, sex
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+
+  9 identified, 3 ambiguous, 12 with nothing to say
+
+### the person dimension: business names
+
+== what does analytics_marts.dim_person hold ==
+   no tags read, no lineage walked. names and values only.
+
+  identified   age                                age
+               name: the name says so and the values could not be profiled
+  identified   marital_status_code                marital_status
+               name and values: the name and the values agree
+  identified   sex_code                           sex
+               name and values: the name and the values agree
+  identified   race_code                          race
+               name and values: the name and the values agree
+  identified   place_of_birth_code                place_of_birth
+               name: the name says so and the values could not be profiled
+  identified   citizenship_code                   citizenship
+               name and values: the name and the values agree
+  identified   nativity_code                      nativity
+               name and values: the name and the values agree
+  identified   disability_code                    disability
+               name and values: the name and the values agree
+  identified   ancestry_code                      ancestry
+               name: the name says so and the values could not be profiled
+
+  ambiguous    tenure_code                        citizenship, marital_status, race
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+  ambiguous    public_coverage_flag               disability, nativity, sex
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+  ambiguous    medicare_coverage_flag             disability, nativity, sex
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+  ambiguous    medicaid_coverage_flag             disability, nativity, sex
+               several attributes share this code set and the name does not choose between them
+               escalate to reconstruct.py, which does not need the name
+
+  9 identified, 4 ambiguous, 16 with nothing to say
