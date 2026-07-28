@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the two agents</title>
+<meta name="description" content="Blast radius before a change lands, root cause after one, both built on the DataHub Agent Context Kit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents" class="here">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <span class="label">agent context kit</span>
+  <h1>Two agents, one graph, opposite directions</h1>
+  <p class="lede">
+    Both are built on the DataHub Agent Context Kit and can run over either transport.
+    Neither has a language model in its decision path, and that is a choice rather than
+    an omission: the answers are traversals and measurements, so they are reproducible,
+    and a person who disagrees with one can check it rather than argue with it.
+  </p>
+  <ul class="status">
+    <li>kit <b>datahub-agent-context 1.6.0.16</b></li>
+    <li>transports <b>kit and mcp</b></li>
+    <li>agreement <b>3 of 3 walks</b></li>
+    <li><span class="live">live</span></li>
+  </ul>
+</section>
+
+<section class="block">
+  <span class="label">before the change</span>
+  <h2>Blast radius</h2>
+  <p class="note">
+    Root cause is the glamorous half and the wrong half to reach for first. By the time
+    anyone runs it the model is already serving decisions off the thing nobody meant to
+    add. The cheap moment is the pull request, when the change is still a diff and the
+    only cost of knowing is a comment.
+  </p>
+  <pre class="term"><code><span class="cmd">python tools/blast.py analytics_marts.dim_person --column public_coverage_flag --policy eu_ai_act</span>
+== blast radius of a change to analytics_marts.dim_person.public_coverage_flag ==
+   read through kit, under Regulation (EU) 2024/1689, Annex III high risk systems
+
+  <span class="hit">examine      in scope because it carries personal_data, and EU AI Act watches that tag.
+               under Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV</span>
+
+  reaches 1 deployed model
+    workforce-classifier_3     mlflow_production, 5 hops
+
+  and 1 registered but not serving
+    workforce-classifier_1     mlflow_archived
+
+  through 2 downstream tables
+    1 hop  [dbt] workforce_features carrying public_coverage_flag
+    2 hop  [postgres] workforce_features carrying public_coverage_flag
+
+  and 8 training runs that consumed it</code></pre>
+  <p class="readout">
+    The split between <b>deployed</b> and <b>registered but not serving</b> is the part
+    that makes this readable. A change reaching forty registered models and no live one
+    is a different change from one reaching a single live model, and a plain downstream
+    count cannot tell them apart.
+  </p>
+
+  <h3>The same answer, shaped for a pull request</h3>
+  <pre class="term"><code><span class="cmd">python tools/blast.py analytics_marts.dim_person --column public_coverage_flag --policy eu_ai_act --comment</span>
+**Blast radius: `analytics_marts.dim_person.public_coverage_flag`**
+
+&gt; **examine**: in scope because it carries personal_data, and EU AI Act
+&gt; watches that tag. Under Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV.
+
+Reaches **1 deployed model**:
+
+| model | stage | hops |
+| --- | --- | --- |
+| `workforce-classifier_3` | mlflow_production | 5 |
+
+&lt;details&gt;&lt;summary&gt;2 downstream tables&lt;/summary&gt;
+...
+&lt;/details&gt;
+
+&lt;sub&gt;Ariadne, from DataHub lineage, under Regulation (EU) 2024/1689.&lt;/sub&gt;</code></pre>
+  <p class="readout">
+    It exits non zero only when a prohibited column reaches something that is serving. A
+    change that merely touches a live model is a thing a person should read, not a build
+    failure, and a check that blocks on everything gets switched off within a week.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">after the change</span>
+  <h2>Root cause</h2>
+  <p class="note">
+    Every ML observability tool can tell you a model changed. That is the easy half and
+    it is where they stop, because a distribution plot has no way to reach the pull
+    request that caused it. Ariadne holds both ends: the measurement knows the number
+    moved and by how much against its own noise, and the graph knows which columns the
+    deployed model gained between those two moments and where each came from.
+  </p>
+  <pre class="term"><code><span class="cmd">python tools/rootcause.py --model workforce-classifier --policy eu_ai_act --via mcp</span>
+== why did workforce-classifier move ==
+   read through mcp, under Regulation (EU) 2024/1689, Annex III high risk systems
+   comparing version 2 (2026-07-27T13:30:31) with version 3 (2026-07-28T08:34:06)
+
+  accuracy went up, 0.6955 to 0.7310 (+0.0355)
+  so nothing that watches model quality had a reason to object
+
+  1 measurement moved beyond noise
+    disability (With a disability against Without a disability)  0.7489 to 0.7883  +0.0394, 12x the noise
+
+  the deployed model gained 1 column between those two moments
+
+    <span class="hit">public_coverage_flag</span>
+      examine, in scope by tag, Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+      enters at postgres:raw_person, 7 hops back
+      <span class="hit">called pubcov where it enters, so a search by name would not have found it</span>
+      defined in models/marts/dim_person.sql
+      defined in models/marts/workforce_features.sql
+      defined in models/staging/sources.yml
+      defined in models/staging/stg_person.sql
+
+  cause: public_coverage_flag</code></pre>
+  <p class="readout">
+    It starts from the measurement, not from the diff. Plenty of columns get added that
+    change nothing, and reporting them all would be a changelog rather than a cause. And
+    it will not rank causes by plausibility when it cannot tell them apart: if two
+    columns arrived together it names both and says the graph cannot choose. A confident
+    single answer would read better and would be invented.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">two mistakes worth keeping</span>
+  <h2>Both agents were wrong first, in the same way</h2>
+  <ul class="split">
+    <li>
+      <b>Blast radius reported no deployed model</b>
+      A column walk cannot reach a model on its own. dbt emits column level edges, so a
+      column can be followed table to table. MLflow emits an edge from the training frame
+      to the model with no column on it, because a training run consumes a table. The
+      walk now runs in two stages, and hops are counted from the start so the distance
+      does not reset. Stopping after stage one answered the exact question asked, wrongly,
+      and the wrong answer sounded like good news.
+    </li>
+    <li>
+      <b>Root cause stopped two hops short</b>
+      It filtered the walk by column name, which looks like a sensible guard. A warehouse
+      renames as it cleans, so the column is <code>public_coverage_flag</code> from
+      staging onward and <code>pubcov</code> in the raw extract. The filter dropped the
+      origin and left a shorter answer that read as complete: five hops to
+      <code>stg_person</code> instead of seven to <code>raw_person</code>. DataHub had
+      already scoped the walk, so the name check could only lose information.
+    </li>
+  </ul>
+  <p class="cite">
+    Both are written into <a href="/skill">the skill</a>, so an agent following it gets
+    the answer rather than the plausible version of it.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">analytics agent</span>
+  <h2>The pattern taken from DataHub's own agent</h2>
+  <p class="note">
+    DataHub's analytics-agent is a full application with a backend, a frontend and a helm
+    chart, and embedding it here would have been theatre. Its own docs call it a
+    reference implementation, so the useful thing to take was the shape rather than the
+    code: a context platform abstraction in front of each way of reaching a catalog,
+    built by a factory rather than chosen at the call site.
+  </p>
+  <p class="note">
+    The part worth copying most was the smallest. It discovers what tools a platform
+    offers instead of assuming, so asking for something a deployment does not have fails
+    at the point of asking with the real list. Against this instance the MCP server
+    advertises six tools and keeps three groups switched off, so the difference is not
+    hypothetical.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>analytics-agent</th><th>ariadne</th><th>same idea</th></tr></thead>
+      <tbody>
+        <tr><td><code>ContextPlatform</code></td><td><code>Context</code></td><td>one interface, many transports</td></tr>
+        <tr><td><code>MCPContextPlatform</code></td><td><code>MCPContext</code></td><td>stdio child process</td></tr>
+        <tr><td><code>native_datahub</code></td><td><code>KitContext</code></td><td>in process SDK</td></tr>
+        <tr><td><code>build_platform()</code></td><td><code>open_context()</code></td><td>factory, not a call site choice</td></tr>
+        <tr><td>tools via <code>tools/list</code></td><td>tools via <code>tools/list</code></td><td>discovered, never hardcoded</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <a class="proof" href="/mcp">how the transports are wired</a>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/tools/blast.py">tools/blast.py</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/tools/rootcause.py">tools/rootcause.py</a>
+    <a href="https://github.com/datahub-project/analytics-agent">datahub-project/analytics-agent</a>
+    <a href="/">back to the run</a>
+  </div>
+</footer>
+
+</body>
+</html>

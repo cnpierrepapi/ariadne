@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the ML impact skill</title>
+<meta name="description" content="A DataHub skill for judging whether a warehouse change reaches a model that is serving, carrying the four traps we hit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <span class="label">datahub skills</span>
+  <h1>The judgment, separated from the code</h1>
+  <p class="lede">
+    A tool is a discrete action. A skill is the judgment needed to chain actions into an
+    answer that is right rather than merely plausible. DataHub's registry covers lineage,
+    search, enrichment, quality and setup. None of them cover the question this project
+    is about, so this one was written in the registry format and carries what the build
+    cost to learn.
+  </p>
+  <ul class="status">
+    <li>format <b>SKILL.md, registry schema</b></li>
+    <li>tools <b>DataHub CLI and MCP only</b></li>
+    <li>failure modes encoded <b>4</b></li>
+    <li>depends on Ariadne <b>no</b></li>
+  </ul>
+</section>
+
+<section class="block">
+  <span class="label">the gap it fills</span>
+  <h2>Why a sixth skill</h2>
+  <p class="note">
+    The existing skills are good and general. The moment a model is on one end of the
+    question, a generic lineage walk starts producing confident wrong answers, because
+    four things about ML lineage are different and each fails silently.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>existing skill</th><th>covers</th><th>where it stops</th></tr></thead>
+      <tbody>
+        <tr><td><code>datahub-lineage</code></td><td>upstream, downstream, impact, root cause between tables</td><td>does not cross into models, or read deployment stage</td></tr>
+        <tr><td><code>datahub-search</code></td><td>finding entities, ownership, metadata</td><td>sibling resolution is not its problem</td></tr>
+        <tr><td><code>datahub-quality</code></td><td>assertions, unhealthy assets, incidents</td><td>quality is about the data, not about what a model learned</td></tr>
+        <tr><td><code>datahub-enrich</code></td><td>tags, terms, owners, descriptions</td><td>writes metadata rather than reasoning about it</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    The skill is explicit about its own boundary. If nothing downstream is a model,
+    it tells the agent to use <code>/datahub-lineage</code> instead, because that is
+    simpler and correct.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">what it encodes</span>
+  <h2>Four ways to be wrong, written down</h2>
+  <ul class="split">
+    <li>
+      <b>Tags live on the sibling you did not walk</b>
+      dbt holds the governance tags, the warehouse entity holds none, and traversal
+      returns the warehouse one. Ask it whether a column is protected and the answer is
+      no. Nothing errors. A check written this way reports all clear forever.
+    </li>
+    <li>
+      <b>Filtering a column walk by column name drops the origin</b>
+      A warehouse renames as it cleans. The graph has already scoped the walk to that
+      column's lineage, so every node it returns is on the path by construction, and a
+      name check can only lose the rename.
+    </li>
+    <li>
+      <b>Column edges stop at the feature table</b>
+      dbt emits column level edges. ML platforms emit a table level edge into the model,
+      because a training run consumes a table. A walk that does not cross that boundary
+      reports the column reaches nothing, which is the exact question asked.
+    </li>
+    <li>
+      <b>The environment in a urn is not a deployment status</b>
+      <code>PROD</code> is the fabric the entity lives in. Read the stage from the
+      registry, where a promotion actually happened, or every archived experiment counts
+      as live.
+    </li>
+  </ul>
+</section>
+
+<section class="block">
+  <span class="label">the file</span>
+  <h2>Frontmatter, and the shape of the workflow</h2>
+  <pre class="term"><code>---
+name: datahub-ml-impact
+description: |
+  Use this skill when a change to a table or column needs to be judged against
+  the ML models downstream of it, or when a deployed model has changed behaviour
+  and the cause has to be found in the warehouse. Triggers on: "what models does
+  this column reach", "is this feature in a deployed model", "did a protected
+  attribute get into the model", "why did this model change" ...
+user-invocable: true
+min-cli-version: 1.5.0.1rc1
+allowed-tools: Bash(datahub *)
+---
+
+Step 1  Find the entity, and pick the right sibling
+Step 2  Walk the column, not the table
+Step 3  Cross the boundary into the model
+Step 4  Separate deployed from merely registered
+Step 5  Say what the change means, not only what it touches</code></pre>
+  <p class="readout">
+    It ends with a checklist the agent runs against its own answer, including the one
+    that matters most: if nothing was found, can you say what you looked at, so that
+    "no impact" is a result rather than a silence.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">installing</span>
+  <h2>It runs on DataHub's own tools</h2>
+  <p class="note">
+    The workflow uses the DataHub CLI and the MCP server and nothing from this
+    repository, so it stands alone. The implementation of the same workflow, if you want
+    to read one, is <code>tools/blast.py</code> and <code>tools/rootcause.py</code>.
+  </p>
+  <pre class="term"><code><span class="cmd">npx skills add datahub-project/datahub-skills</span>
+<span class="cmd">npx skills add cnpierrepapi/ariadne --path skills</span></code></pre>
+  <a class="proof" href="/agents">the same workflow as running code</a>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/skills/datahub-ml-impact/SKILL.md">the full SKILL.md</a>
+    <a href="https://github.com/datahub-project/datahub-skills">datahub-project/datahub-skills</a>
+    <a href="/">back to the run</a>
+  </div>
+</footer>
+
+</body>
+</html>

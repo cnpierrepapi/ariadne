@@ -13,11 +13,14 @@
 <body>
 
 <header class="topbar">
-  <span class="wordmark">ARIADNE</span>
+  <a class="wordmark" href="/">ARIADNE</a>
   <nav>
-    <a href="#s4">the alarm</a>
-    <a href="#s7">the incident</a>
-    <a href="#s8">no tags</a>
+    <a href="/" class="here">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register">register</a>
     <a href="https://github.com/cnpierrepapi/ariadne">source</a>
   </nav>
 </header>
@@ -33,6 +36,7 @@
     <div><dt>warehouse</dt><dd>Postgres, 378,817 census person records, California 2018, built by dbt</dd></div>
     <div><dt>models</dt><dd>income-classifier v3 and workforce-classifier v3, both in the MLflow registry at stage Production</dd></div>
     <div><dt>catalog</dt><dd>DataHub v1.5, lineage ingested by the postgres, dbt and mlflow connectors, nothing hand written</dd></div>
+    <div><dt>read through</dt><dd>the DataHub MCP server and the Agent Context Kit, checked against each other on <a href="/agents">every walk</a></dd></div>
     <div><dt>run</dt><dd>28 July 2026</dd></div>
   </dl>
 </section>
@@ -137,6 +141,7 @@ Created version '3' of model 'workforce-classifier'.</code></pre>
       one that moved worth reading. The threshold is measured rather than chosen: four
       times the spread observed across refits, floored at 0.02.
     </p>
+    <a class="proof" href="/register">why this column was a candidate at all</a>
   </div>
 </section>
 
@@ -160,6 +165,7 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
       tag one hop back that the feature table never carried. Every edge here came out of
       a DataHub connector reading dbt, Postgres and MLflow.
     </p>
+    <a class="proof" href="/graph">the graph, and how it was ingested</a>
   </div>
 </section>
 
@@ -222,6 +228,7 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
       mlModel urn at the entity layer. The table is the better home anyway: it is where
       the column entered and where a fix goes.
     </p>
+    <a class="proof" href="/incidents">all nine incidents, read back from DataHub</a>
   </div>
 </section>
 
@@ -264,34 +271,78 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
   </div>
 </section>
 
+<!-- 9 -->
+<section class="step" id="s9">
+  <div class="rail"><span class="num">09</span><span class="tick"></span></div>
+  <div class="body">
+    <h2>Ask it as a question instead</h2>
+    <p class="note">
+      Everything above is a check that runs. This is the same evidence asked for as a
+      question, by an agent reading the catalog through DataHub's own MCP server rather
+      than through any query of ours.
+    </p>
+    <pre class="term"><code><span class="cmd">python tools/rootcause.py --model workforce-classifier --policy eu_ai_act --via mcp</span>
+== why did workforce-classifier move ==
+   read through mcp, under Regulation (EU) 2024/1689, Annex III high risk systems
+   comparing version 2 (2026-07-27T13:30:31) with version 3 (2026-07-28T08:34:06)
+
+  accuracy went up, 0.6955 to 0.7310 (+0.0355)
+  so nothing that watches model quality had a reason to object
+
+  1 measurement moved beyond noise
+    disability (With a disability against Without a disability)  0.7489 to 0.7883  +0.0394, 12x the noise
+
+  the deployed model gained 1 column between those two moments
+
+    <span class="hit">public_coverage_flag</span>
+      examine, in scope by tag, Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+      enters at postgres:raw_person, 7 hops back
+      <span class="hit">called pubcov where it enters, so a search by name would not have found it</span>
+      defined in models/marts/dim_person.sql
+      defined in models/marts/workforce_features.sql
+      defined in models/staging/sources.yml
+      defined in models/staging/stg_person.sql
+
+  cause: public_coverage_flag</code></pre>
+    <p class="readout">
+      A column, a file, a moment and a rename, in one answer. The rename is the part a
+      person could not have searched for: the column is called
+      <code>public_coverage_flag</code> where the alarm fired and <code>pubcov</code>
+      where it enters the warehouse.
+    </p>
+    <a class="proof" href="/agents">both agents, and the check that the two surfaces agree</a>
+  </div>
+</section>
+
 <!-- appendix -->
 <section class="appendix">
   <h2>Why that column</h2>
   <p class="note">
     The first attempt guessed. A commute field, vehicles per household, seemed a
-    plausible stand in for disability. It moved the number <b>+0.0095</b> and the alarm
-    stayed silent, correctly. So the candidates came from the disability literature
-    instead, and each was tested against this warehouse rather than trusted.
+    plausible stand in for disability. It moved the number <b>+0.0096</b>, well under the
+    threshold, and the alarm stayed silent, correctly. So the candidates were written
+    down first with a source against each, then measured on 244,328 rows over three
+    seeds. Only two of the five that could be tested survived.
   </p>
   <div class="table-scroll">
     <table>
-      <thead><tr><th>column</th><th>what it is</th><th>moves the alarm by</th><th></th></tr></thead>
+      <thead><tr><th>candidate</th><th>what it is</th><th>alone</th><th>adds</th><th></th></tr></thead>
       <tbody>
-        <tr><td><code>PUBCOV</code></td><td>public health coverage</td><td class="v">+0.0510</td><td class="p">fires</td></tr>
-        <tr><td><code>HINS4</code></td><td>Medicaid</td><td class="v">+0.0342</td><td class="p">fires</td></tr>
-        <tr><td><code>SSIP</code></td><td>supplemental security income</td><td class="v">+0.0250</td><td class="p">fires</td></tr>
-        <tr><td><code>HINS3</code></td><td>Medicare</td><td class="v">+0.0229</td><td class="p">fires</td></tr>
-        <tr><td><code>POVPIP</code></td><td>income to poverty ratio</td><td class="v">+0.0177</td><td class="n">silent</td></tr>
-        <tr><td><code>VEH</code></td><td>vehicles available, the guess</td><td class="v">+0.0095</td><td class="n">silent</td></tr>
-        <tr><td><code>GRPIP</code></td><td>rent as a share of income</td><td class="v">+0.0053</td><td class="n">silent</td></tr>
+        <tr><td><code>PUBCOV</code></td><td>any public health coverage</td><td class="v">0.7020</td><td class="v">+0.0544</td><td class="a">fires</td></tr>
+        <tr><td><code>HINS4</code></td><td>Medicaid, whose survey question names disability</td><td class="v">0.6650</td><td class="v">+0.0379</td><td class="a">fires</td></tr>
+        <tr><td><code>SSIP</code></td><td>supplemental security income</td><td class="v">0.5923</td><td class="v">+0.0261</td><td class="n">silent</td></tr>
+        <tr><td><code>HINS3</code></td><td>Medicare, disability driven below 65</td><td class="v">0.5948</td><td class="v">+0.0239</td><td class="n">silent</td></tr>
+        <tr><td><code>VEH</code></td><td>vehicles available, the guess</td><td class="v">0.6201</td><td class="v">+0.0096</td><td class="n">silent</td></tr>
       </tbody>
     </table>
   </div>
   <p class="note">
-    Rent burden is the useful failure. Its association with disability is well documented
-    in the census literature and it does not survive the screen here. A published finding
-    is a hypothesis about your warehouse, never a fact about it.
+    Medicare is the useful failure. It had the better source of the two eligibility rules
+    and it is silent anyway, because the features already present carry most of what it
+    knows. A published association is a hypothesis about your warehouse, never a fact
+    about it. It stays in the register as refuted rather than being deleted.
   </p>
+  <a class="proof" href="/register">the register, with every source</a>
 </section>
 
 <section class="caveats">
@@ -302,6 +353,59 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
     <li><b>Public coverage is not purely disability.</b> In California after Medicaid expansion it also tracks low income. Medicare below 65 is the cleaner channel.</li>
     <li><b>The level is arguable, the change is not.</b> Race sits at 0.73 from an ordinary lending model, which may be plain socioeconomic correlation. That is why the alarm watches movement.</li>
   </ul>
+</section>
+
+<section class="block" style="max-width:none">
+  <span class="label">the proof, one page per part</span>
+  <h2>Every DataHub surface this used</h2>
+  <p class="lede">
+    The run above is the argument. These are the parts of DataHub it was built on, each
+    with the output it actually returned on this instance.
+  </p>
+  <div class="cards">
+    <a class="card" href="/surfaces">
+      <span class="label">index</span>
+      <h3>All surfaces</h3>
+      <p>Every part of DataHub, what it was used for, and whether it is live.</p>
+      <span class="metric">8 surfaces</span>
+    </a>
+    <a class="card" href="/mcp">
+      <span class="label">mcp server</span>
+      <h3>MCP</h3>
+      <p>The official server as a child process over stdio, tools discovered not assumed.</p>
+      <span class="metric">6 tools discovered</span>
+    </a>
+    <a class="card" href="/agents">
+      <span class="label">agent context kit</span>
+      <h3>Agents</h3>
+      <p>Blast radius before a change, root cause after one, over either transport.</p>
+      <span class="metric">3 of 3 walks agree</span>
+    </a>
+    <a class="card" href="/graph">
+      <span class="label">context graph</span>
+      <h3>Graph</h3>
+      <p>Lineage ingested by three connectors, policy packs, and column identification.</p>
+      <span class="metric">7 hops, column level</span>
+    </a>
+    <a class="card" href="/incidents">
+      <span class="label">incidents api</span>
+      <h3>Incidents</h3>
+      <p>Findings written back into DataHub and read out again through the front end.</p>
+      <span class="metric">9 raised, all active</span>
+    </a>
+    <a class="card" href="/skill">
+      <span class="label">datahub skills</span>
+      <h3>Skill</h3>
+      <p>An ML impact skill in the registry format, carrying the four traps we hit.</p>
+      <span class="metric">4 failure modes encoded</span>
+    </a>
+    <a class="card" href="/register">
+      <span class="label">research</span>
+      <h3>Register</h3>
+      <p>Proxy hypotheses declared with sources before measurement, most of them refuted.</p>
+      <span class="metric">2 of 5 survived</span>
+    </a>
+  </div>
 </section>
 
 <footer>

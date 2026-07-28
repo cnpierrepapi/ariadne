@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the MCP server</title>
+<meta name="description" content="The official DataHub MCP server run over stdio, tools discovered at the handshake, and the stall that hides before it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp" class="here">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <span class="label">mcp server</span>
+  <h1>The read path an outside agent would take</h1>
+  <p class="lede">
+    Ariadne began by talking to GraphQL directly. That was the right way to prove the
+    graph existed and the wrong door for an agent to use. The official MCP server is now
+    a real transport: spawned as a child process, spoken to in JSON-RPC over stdio, tools
+    discovered at the handshake rather than assumed.
+  </p>
+  <ul class="status">
+    <li>server <b>datahub 3.4.5</b></li>
+    <li>transport <b>stdio</b></li>
+    <li>mode <b>open source, 6 tools</b></li>
+    <li>gms <b>v1.5.0.6</b></li>
+    <li><span class="live">live</span></li>
+  </ul>
+</section>
+
+<section class="block">
+  <span class="label">the handshake</span>
+  <h2>What the server offers this instance</h2>
+  <p class="note">
+    Nothing here is a list written by us. The server is asked what it has and it answers.
+    That matters because the answer changes with deployment: this open source instance
+    keeps the mutation, user and data quality groups switched off, so a tool name copied
+    from a richer deployment would work in one place and fail in another.
+  </p>
+  <pre class="term"><code><span class="cmd">python tools/context.py --via mcp</span>
+transport mcp, gms http://localhost:8080
+server    datahub 3.4.5
+tools     6 discovered: get_dataset_queries, get_entities, get_lineage,
+          get_lineage_paths_between, list_schema_fields, search
+
+search workforce_features: 5 entities
+  urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
+  urn:li:dataset:(urn:li:dataPlatform:postgres,warehouse.analytics_marts.workforce_features,PROD)
+  urn:li:dataset:(urn:li:dataPlatform:mlflow,warehouse.analytics_marts.workforce_features,PROD)
+  urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
+  urn:li:schemaField:(urn:li:dataset:(urn:li:dataPlatform:postgres,warehouse.analytics_marts.workforce_features,PROD),age)</code></pre>
+  <p class="readout">
+    Three of those five are the same table. dbt holds the governance tags, postgres holds
+    the physical table, mlflow holds the training frame, and they are siblings. Which one
+    a walk starts from changes the answer, which is the first thing on
+    <a href="/graph">the graph page</a>.
+  </p>
+  <p class="note tight">Asking for something the transport does not have fails at the point of asking:</p>
+  <pre class="term"><code><span class="cmd">python -c "from context import open_context; open_context('kit').call('add_tags', {})"</span>
+kit does not offer 'add_tags'. It offers: get_lineage, list_schema_fields, search</code></pre>
+</section>
+
+<section class="block">
+  <span class="label">the part that cost an afternoon</span>
+  <h2>The stall that happens before the handshake</h2>
+  <p class="note">
+    The first MCP session never returned. No error, no timeout, no output. The server
+    posts a usage ping to an external host before it answers <code>initialize</code>, and
+    on a box that cannot reach that host the send retries. Because it happens before the
+    handshake, an MCP client has nothing to report: the protocol has not started yet.
+  </p>
+  <pre class="term"><code><span class="cmd">printf '%s\n' "$INIT" | mcp-server-datahub --transport stdio</span>
+<span class="dim">2026-07-28 14:19:03 | INFO | mcp_server_datahub:register_all_tools - Registering MCP tools (is_oss=True)</span>
+<span class="hit">WARNING:urllib3.connectionpool:Retrying (Retry(total=3, ...)) after connection broken by
+  'ConnectTimeoutError(&lt;HTTPSConnection(host='track.datahubproject.io', port=443)&gt;,
+   'Connection to track.datahubproject.io timed out. (connect timeout=10)')': /mp/engage</span>
+<span class="hit">WARNING:urllib3.connectionpool:Retrying (Retry(total=2, ...))</span>
+<span class="hit">WARNING:urllib3.connectionpool:Retrying (Retry(total=1, ...))</span>
+<span class="hit">WARNING:urllib3.connectionpool:Retrying (Retry(total=0, ...))</span></code></pre>
+  <p class="readout">
+    Four retries at a ten second connect timeout each. The fix is one environment
+    variable, <code>DATAHUB_TELEMETRY_ENABLED=false</code>, and it is set in
+    <code>tools/context.py</code> with the reason written next to it so nobody removes it
+    as tidying.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">the second one</span>
+  <h2>Trimmed responses, and the field that goes missing</h2>
+  <p class="note">
+    The MCP server trims responses so an answer fits inside a model's context window.
+    That is sensible and it has a consequence: fields present through an in process call
+    can be absent over MCP. Entity <code>type</code> on search results is one of them.
+  </p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>field</th><th>agent context kit</th><th>mcp server</th><th>effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>urn</code></td><td class="p">present</td><td class="p">present</td><td>safe to key on</td></tr>
+        <tr><td><code>type</code></td><td class="p">present</td><td class="n">dropped</td><td>a filter on it matches nothing, silently</td></tr>
+        <tr><td><code>properties.name</code></td><td class="p">present</td><td class="p">present</td><td>safe</td></tr>
+        <tr><td><code>facets</code></td><td class="p">present</td><td class="n">trimmed</td><td>never used for a decision here</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="readout">
+    So entity type is derived from the urn instead. <code>urn:li:dataset:</code> is a
+    dataset whatever the payload says, because the urn is the identifier and cannot be
+    trimmed away. This is exactly the failure this whole project is about, met from the
+    other side: a check that returns nothing and reads as good news.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">why both transports exist</span>
+  <h2>Fast in process, honest over stdio, checked against each other</h2>
+  <p class="note">
+    Two read paths are only worth having if they agree. A fast path that quietly returns
+    a shorter answer is worse than no fast path, because every check built on it reports
+    all clear on a smaller graph. So the same walks run down both and the results are
+    compared on the parts a decision is made from: which nodes, how far away, and which
+    column carried the edge.
+  </p>
+  <pre class="term"><code><span class="cmd">python tools/agree.py</span>
+== do the two DataHub surfaces agree ==
+   kit  datahub-agent-context, in process
+   mcp  datahub 3.4.5 over stdio, 6 tools
+
+  <span class="ok">agree</span>    7 nodes  upstream of workforce_features on public_coverage_flag
+  <span class="ok">agree</span>    7 nodes  downstream of workforce_features
+  <span class="ok">agree</span>    5 nodes  upstream of dim_person on disability_code
+
+  3/3 walks identical through both</code></pre>
+  <p class="readout">
+    It deliberately does not compare raw payloads. Those differ by design, and a check
+    that fails on nothing is not a check.
+  </p>
+  <a class="proof" href="/agents">the agents built on top of this</a>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/tools/context.py">tools/context.py</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/tools/agree.py">tools/agree.py</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/tree/master/examples">the raw output on this page</a>
+    <a href="/">back to the run</a>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, DataHub surfaces</title>
+<meta name="description" content="Every part of DataHub this was built on, what it was used for, and the output it returned.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">the run</a>
+    <a href="/surfaces" class="here">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <span class="label">what was used, and how</span>
+  <h1>Every DataHub surface, and what it did here</h1>
+  <p class="lede">
+    Ariadne is not a thing next to DataHub. Every claim it makes is a claim about the
+    DataHub graph, read through DataHub's own agent surfaces, and written back through
+    DataHub's own APIs. This page lists each part, what it was used for, and what it
+    returned on this instance.
+  </p>
+  <ul class="status">
+    <li>gms <b>v1.5.0.6</b></li>
+    <li>mcp server <b>datahub 3.4.5</b></li>
+    <li>agent context kit <b>1.6.0.16</b></li>
+    <li>entities <b>this project only</b></li>
+    <li><span class="live">live on the box</span></li>
+  </ul>
+</section>
+
+<section class="block" style="max-width:none">
+  <h2>The eight parts</h2>
+  <div class="table-scroll">
+    <table style="min-width:760px">
+      <thead><tr><th>surface</th><th>what it was used for</th><th>what it returned</th><th>proof</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>context graph</code></td>
+          <td>The product. Column level lineage from a feature back to the raw census extract, and forward to whatever is serving.</td>
+          <td class="v">7 hops</td>
+          <td><a href="/graph">graph</a></td>
+        </tr>
+        <tr>
+          <td><code>ingestion connectors</code></td>
+          <td>postgres, dbt and mlflow. Every edge in the graph was produced by one of them. Nothing is hand emitted.</td>
+          <td class="v">3 connectors</td>
+          <td><a href="/graph">graph</a></td>
+        </tr>
+        <tr>
+          <td><code>MCP server</code></td>
+          <td>The read path an outside agent would take. Run as a child process over stdio, tools discovered at handshake rather than assumed.</td>
+          <td class="v">6 tools</td>
+          <td><a href="/mcp">mcp</a></td>
+        </tr>
+        <tr>
+          <td><code>Agent Context Kit</code></td>
+          <td>The in process read path, and the runtime both agents are built on.</td>
+          <td class="v">3 tools used</td>
+          <td><a href="/agents">agents</a></td>
+        </tr>
+        <tr>
+          <td><code>Analytics Agent</code></td>
+          <td>Its context platform pattern, not its application. One abstraction per way of reaching a catalog, built by a factory, tools discovered rather than hardcoded.</td>
+          <td class="v">pattern adopted</td>
+          <td><a href="/agents">agents</a></td>
+        </tr>
+        <tr>
+          <td><code>DataHub Skills</code></td>
+          <td>An ML impact skill in the registry format, covering the question the existing five do not: does a warehouse change reach something that is serving.</td>
+          <td class="v">1 authored</td>
+          <td><a href="/skill">skill</a></td>
+        </tr>
+        <tr>
+          <td><code>Incidents API</code></td>
+          <td>Findings written back so they land where a data team already looks, rather than in a report nobody opens.</td>
+          <td class="v">9 raised</td>
+          <td><a href="/incidents">incidents</a></td>
+        </tr>
+        <tr>
+          <td><code>tags and structured metadata</code></td>
+          <td>Governance tags declared in dbt and read back through the sibling graph, which is the only way to see them from a lineage walk.</td>
+          <td class="v">14 columns</td>
+          <td><a href="/graph">graph</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="block" style="max-width:none">
+  <span class="label">what it cost to find out</span>
+  <h2>Four things that were not in the documentation</h2>
+  <p class="lede">
+    Each of these was found by running against a real instance, and each fails silently,
+    which is the reason they are worth writing down. A loud failure teaches you something
+    the first time. These teach you nothing until much later.
+  </p>
+  <ul class="split">
+    <li>
+      <b>The MCP server stalls before the handshake</b>
+      It posts a usage ping before answering <code>initialize</code>. Where that host is
+      unreachable the send retries for about forty seconds, and because it happens before
+      the handshake the client sees no error and no response. Setting
+      <code>DATAHUB_TELEMETRY_ENABLED=false</code> fixes it.
+    </li>
+    <li>
+      <b>MCP responses are trimmed, and <code>type</code> is one of the casualties</b>
+      Search results over MCP omit the entity type to save context. Filtering on it works
+      in process and matches nothing over MCP, with no error. Entity type has to come
+      from the urn, which no transport can afford to trim.
+    </li>
+    <li>
+      <b>Ingest order changes what the graph contains</b>
+      The mlflow connector overwrites the postgres entity's schema with the training
+      frame's columns, so postgres has to run after mlflow. The dbt source resolves
+      <code>select *</code> against the schema DataHub already holds, so postgres also
+      has to run before dbt. The order is postgres, dbt, mlflow, postgres.
+    </li>
+    <li>
+      <b>Incidents do not attach to an ML model</b>
+      DataHub v1.5 rejects an mlModel urn at the entity layer. Only datasets, jobs, flows,
+      dashboards and charts carry the aspect. The feature table turned out to be the
+      better home anyway, since that is where a fix goes.
+    </li>
+  </ul>
+  <p class="cite">
+    All four are being written up as contributions back to the DataHub project.
+  </p>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne">github.com/cnpierrepapi/ariadne</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/tree/master/examples">the raw output on this page</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/TECHNICAL.md">technical notes</a>
+    <a href="/">back to the run</a>
+  </div>
+</footer>
+
+</body>
+</html>

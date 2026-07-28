@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the proxy register</title>
+<meta name="description" content="Proxy hypotheses declared with their sources before measurement, then measured on 244,328 rows. Most of them failed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/graph">graph</a>
+    <a href="/register" class="here">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <span class="label">research register</span>
+  <h1>Write the hypothesis down before you measure it</h1>
+  <p class="lede">
+    A plausible story about a column is not evidence about a column. Every candidate is
+    declared first, with where the claim comes from and why it should hold, and only then
+    measured. Recording it beforehand is what stops the screen from becoming a search for
+    whichever column happened to score well, which would find something every time and
+    mean nothing.
+  </p>
+  <ul class="status">
+    <li>attribute <b>disability</b></li>
+    <li>rows <b>244,328</b></li>
+    <li>seeds <b>17, 18, 19</b></li>
+    <li>declared <b>7</b></li>
+    <li>survived <b>2</b></li>
+  </ul>
+</section>
+
+<section class="block">
+  <span class="label">why this exists</span>
+  <h2>The first attempt was a guess, and it was wrong</h2>
+  <p class="note">
+    Vehicles per household went into a feature table because it sounded like a disability
+    proxy: two of the six census disability questions concern mobility, so vehicle access
+    seemed a reasonable stand in. It moved disability by <b>0.0096</b>, well under the
+    threshold. It moved race, marital status and citizenship instead, and accuracy went
+    up, so every metric said ship it.
+  </p>
+  <p class="note">
+    The failure is kept in the register as a control. A register containing only the
+    hypotheses that worked would be a results table.
+  </p>
+</section>
+
+<section class="block" style="max-width:none">
+  <span class="label">measured</span>
+  <h2>Two numbers per hypothesis</h2>
+  <p class="lede">
+    <b>Alone</b> asks whether there is anything in the column at all. <b>Adds</b> asks the
+    question that actually matters: how much more of the attribute would enter the model
+    if this column were added to the feature table. A column can score well alone and add
+    nothing, because the features already present carry the same information.
+  </p>
+  <div class="table-scroll">
+    <table style="min-width:820px">
+      <thead>
+        <tr><th>candidate</th><th>basis of the claim</th><th>alone</th><th>adds</th><th>verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>PUBCOV</code><br><span class="cite">public_coverage_flag</span></td>
+          <td>derived. The union of Medicare, Medicaid, TRICARE and VA coverage, included expecting it to be redundant.</td>
+          <td class="v">0.7020</td><td class="v">+0.0544</td><td class="a">fires</td>
+        </tr>
+        <tr>
+          <td><code>HINS4</code><br><span class="cite">medicaid_coverage_flag</span></td>
+          <td>definitional. The survey question that collects it names disability in its own text.</td>
+          <td class="v">0.6650</td><td class="v">+0.0379</td><td class="a">fires</td>
+        </tr>
+        <tr>
+          <td><code>SSIP</code><br><span class="cite">supplementary_security_income_usd</span></td>
+          <td>eligibility rule. SSI is paid on the basis of disability, blindness or age.</td>
+          <td class="v">0.5923</td><td class="v">+0.0261</td><td class="n">silent</td>
+        </tr>
+        <tr>
+          <td><code>HINS3</code><br><span class="cite">medicare_coverage_flag</span></td>
+          <td>eligibility rule. SSDI entitlement carries Medicare after a qualifying period, so working age Medicare is disability driven.</td>
+          <td class="v">0.5948</td><td class="v">+0.0239</td><td class="n">silent</td>
+        </tr>
+        <tr>
+          <td><code>VEH</code><br><span class="cite">vehicles_available</span></td>
+          <td>guess. No source. Reasoned from the concept, kept as a control.</td>
+          <td class="v">0.6201</td><td class="v">+0.0096</td><td class="n">silent</td>
+        </tr>
+        <tr>
+          <td><code>POVPIP</code></td>
+          <td>correlational. Income relative to the poverty threshold.</td>
+          <td class="v">&mdash;</td><td class="v">&mdash;</td><td class="n">not in this warehouse</td>
+        </tr>
+        <tr>
+          <td><code>GRPIP</code></td>
+          <td>correlational. Rent as a share of income, two steps from the attribute.</td>
+          <td class="v">&mdash;</td><td class="v">&mdash;</td><td class="n">not in this warehouse</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    The baseline rebuilds disability at <b>0.7321</b> from the deployed model's own
+    features before any candidate is added, and the threshold is <b>0.0222</b>. That
+    threshold is not chosen for this page: it is the same one the exposure check fires
+    on, four times the measured spread across refits with a floor. Using a looser one
+    here would fill the register with findings the check downstream would then ignore.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">the result worth arguing about</span>
+  <h2>The strongest evidence had no statistics in it</h2>
+  <p class="note">
+    The candidate that fires hardest after the union is Medicaid, and the reason is not a
+    correlation anyone reported. It is the wording of the question that collects it:
+  </p>
+  <pre class="term"><code>ACS questionnaire, health insurance coverage, item d:
+
+  <span class="hit">Medicaid, Medical Assistance, or any government-assistance plan
+  for those with low incomes or a disability</span></code></pre>
+  <p class="readout">
+    A respondent living with a disability is being asked, in the same sentence, whether
+    they are the kind of person the programme is for. The association is built into the
+    instrument. No study is needed to justify it, only the questionnaire, and that is a
+    far more durable source than an effect size from one paper.
+  </p>
+  <p class="note">
+    The mirror image is Medicare, which had a good source and is silent anyway. The
+    eligibility rule is real, but the features already present carry most of what it
+    knows, so adding it would move very little. A published association is a hypothesis
+    about your warehouse, never a fact about it.
+  </p>
+  <p class="cite">
+    Sources, verbatim in the register:
+    <a href="https://usa.ipums.org/usa/acs_healthins.shtml">IPUMS, health insurance variables in the ACS</a>,
+    <a href="https://www.ssa.gov/disabilityresearch/wi/medicare.htm">SSA, Medicare and disability</a>,
+    <a href="https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html">Census, how ACS collects disability</a>.
+  </p>
+</section>
+
+<section class="block">
+  <span class="label">what the file looks like</span>
+  <h2>The register is the input, not the write up</h2>
+  <p class="note">
+    <code>research/proxies.yml</code> is read by <code>tools/screen.py</code>. Nothing on
+    this page was typed by hand: the numbers come from the run and the reasons come from
+    the file.
+  </p>
+  <pre class="term"><code>- id: medicaid_question_names_disability
+  claim: &gt;
+    Medicaid coverage identifies disability because the survey question that
+    collects it names disability in its own text, so the association is built
+    into the instrument rather than observed after the fact.
+  column: medicaid_coverage_flag
+  pums: HINS4
+  strength: definitional
+  source:
+    title: Health Insurance Variables in the American Community Survey
+    publisher: IPUMS USA
+    url: https://usa.ipums.org/usa/acs_healthins.shtml
+    quote: &gt;
+      Medicaid, Medical Assistance, or any government-assistance plan for
+      those with low incomes or a disability</code></pre>
+  <p class="readout">
+    Two entries could not be tested because the columns are not in this warehouse, and
+    they stay in the file. An untested hypothesis is not a refuted one, and deleting it
+    would quietly turn a gap in the data into a finding.
+  </p>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/research/proxies.yml">research/proxies.yml</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/tools/screen.py">tools/screen.py</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/state/screen.json">the measured results</a>
+    <a href="/">back to the run</a>
+  </div>
+</footer>
+
+</body>
+</html>
