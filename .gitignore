@@ -8,3 +8,6 @@ warehouse/target/
 warehouse/logs/
 warehouse/dbt_packages/
 .env
+
+.vercel
+.env*
