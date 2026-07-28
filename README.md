@@ -72,13 +72,33 @@ python pipeline/extract.py --states CA --year 2018   # land raw census tables
 cd warehouse && dbt build && dbt docs generate && cd ..
 python ml/train.py                                   # train and register
 
+# order matters, and postgres runs twice. see below
 datahub ingest -c ingest/postgres.yml
 datahub ingest -c ingest/dbt.yml
 datahub ingest -c ingest/mlflow.yml
+datahub ingest -c ingest/postgres.yml
 
 python tools/verify.py                               # is the thread intact?
 python tools/sentinel.py                             # does any invariant fire?
 ```
+
+### Why postgres is ingested twice
+
+Two ordering constraints that point opposite ways, both found by running into them.
+
+The dbt source resolves `select *` against the schema DataHub already holds for the
+target platform, not against dbt's own catalog. So a column added since the last
+postgres ingest is invisible to it, and the column level edge for that column is
+silently missing while every other column in the same table traces correctly.
+**Postgres has to run before dbt.**
+
+The mlflow source overwrites the postgres entity's schema with the columns of the
+training frame. Run it last and the catalog shows a feature table with the columns
+the model happened to train on rather than the columns the table has.
+**Postgres has to run after mlflow.**
+
+Neither failure raises an error. The first loses one lineage edge, the second
+leaves a table looking correct and reading wrong.
 
 ## Commands
 
