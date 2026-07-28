@@ -1,0 +1,154 @@
+# Proxy hypotheses, declared before they are measured.
+#
+# The vehicles_available guess is why this file exists. It went into a feature
+# table because it sounded like a disability proxy, and it moved disability by
+# 0.0111, under the noise floor, while moving race, marital status and
+# citizenship instead. A plausible story about a column is not evidence about a
+# column.
+#
+# So a hypothesis is written down first, with where it came from and why it
+# should hold, and only then measured. Recording it beforehand is what stops the
+# screen from becoming a search for whichever column happened to score well,
+# which would find something every time and mean nothing.
+#
+# A source has to be checkable. Program eligibility rules and survey question
+# wording are better sources than a correlation somebody once reported, because
+# they say why the link exists rather than that it was observed once. Where the
+# instrument that collects the data names the attribute in its own question
+# text, that is the strongest evidence available and it is not statistical.
+#
+# `column` is the warehouse column the hypothesis maps to, or null where the
+# concept is not in this warehouse. Null is a real answer and stays in the file:
+# an untested hypothesis is not a refuted one, and deleting it would quietly
+# turn a gap in the data into a finding.
+
+attribute: disability
+target_column: disability_code
+notes: >
+  ACS PUMS, California 2018. The attribute is DIS, the Census disability
+  recode, built from six difficulty questions covering hearing, vision,
+  cognition, ambulation, self care and independent living.
+source_of_target:
+  title: How Disability Data are Collected from the American Community Survey
+  publisher: US Census Bureau
+  url: https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html
+
+hypotheses:
+  - id: medicaid_question_names_disability
+    claim: >
+      Medicaid coverage identifies disability because the survey question that
+      collects it names disability in its own text, so the association is built
+      into the instrument rather than observed after the fact.
+    column: medicaid_coverage_flag
+    pums: HINS4
+    strength: definitional
+    source:
+      title: Health Insurance Variables in the American Community Survey
+      publisher: IPUMS USA
+      url: https://usa.ipums.org/usa/acs_healthins.shtml
+      quote: >
+        Medicaid, Medical Assistance, or any government-assistance plan for
+        those with low incomes or a disability
+    why: >
+      A respondent reading that question and living with a disability is being
+      asked, in the same sentence, whether they are the kind of person the
+      programme is for. This is the cleanest case in the register: no study is
+      needed to justify it, only the questionnaire.
+
+  - id: medicare_under_65_is_disability
+    claim: >
+      Medicare coverage below retirement age is largely disability driven,
+      because SSDI entitlement carries Medicare eligibility after a qualifying
+      period, so a working age person holding Medicare has usually qualified
+      through disability rather than age.
+    column: medicare_coverage_flag
+    pums: HINS3
+    strength: eligibility rule
+    source:
+      title: Medicare Information, Disability Research
+      publisher: US Social Security Administration
+      url: https://www.ssa.gov/disabilityresearch/wi/medicare.htm
+    why: >
+      The workforce model is fitted on working age people, which is exactly the
+      population where this rule bites. On a sample that included people over
+      65 the same column would mostly encode age instead, and the hypothesis
+      would be wrong for a reason that has nothing to do with the column.
+
+  - id: ssi_is_a_disability_programme
+    claim: >
+      Supplemental Security Income is paid on the basis of disability, blindness
+      or age, so a non zero SSI amount for a working age person is close to an
+      administrative record of disability.
+    column: supplementary_security_income_usd
+    pums: SSIP
+    strength: eligibility rule
+    source:
+      title: Health Insurance, Poverty, and Medical Costs Before and After Disability Application
+      publisher: PubMed Central
+      url: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12763531/
+    why: >
+      Recorded as a dollar amount rather than a flag, so it also leaks how much
+      is received. Expected to be weaker than the coverage flags despite the
+      tighter eligibility rule, because take up is incomplete and many disabled
+      people receive nothing.
+
+  - id: public_coverage_unions_the_others
+    claim: >
+      Any public coverage should carry at least as much of the attribute as its
+      strongest component, since it is the union of Medicare, Medicaid, TRICARE
+      and VA coverage.
+    column: public_coverage_flag
+    pums: PUBCOV
+    strength: derived
+    source:
+      title: Health Insurance Variables in the American Community Survey
+      publisher: IPUMS USA
+      url: https://usa.ipums.org/usa/acs_healthins.shtml
+    why: >
+      Included deliberately as the one hypothesis the register expects to be
+      redundant. If a union of four programmes scores no better than the best
+      one alone, that says the others contribute nothing, which is worth knowing
+      before anyone proposes adding them separately.
+
+  - id: vehicles_and_ambulatory_difficulty
+    claim: >
+      Vehicle access reflects ambulatory difficulty, since two of the six
+      disability questions concern mobility and driving is harder without it.
+    column: vehicles_available
+    pums: VEH
+    strength: guess
+    source: null
+    why: >
+      Kept in the register precisely because it is the one that failed. It was
+      reasoned from the concept rather than from any source, which is why the
+      source field is empty and why it belongs here as a control. A register
+      containing only hypotheses that worked would be a results table.
+
+  - id: poverty_ratio
+    claim: >
+      Income relative to the poverty threshold tracks disability, since
+      disability depresses earnings and raises costs.
+    column: null
+    pums: POVPIP
+    strength: correlational
+    source:
+      title: Health Insurance, Poverty, and Medical Costs Before and After Disability Application
+      publisher: PubMed Central
+      url: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12763531/
+    why: >
+      Not extracted into this warehouse, so it cannot be tested here. Left in
+      the file so the gap is visible. Household income is present and is a
+      cruder version of the same idea, which the screen measures separately.
+
+  - id: rent_burden
+    claim: >
+      Rent as a share of income tracks disability through the same income
+      channel as the poverty ratio.
+    column: null
+    pums: GRPIP
+    strength: correlational
+    source: null
+    why: >
+      Two steps removed from the attribute and dependent on being a renter at
+      all. Recorded as the weakest thing in the register so that the screen has
+      something at the bottom of the range to calibrate against.

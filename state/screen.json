@@ -1,0 +1,113 @@
+{
+  "measured_at": "2026-07-28T14:50:08+00:00",
+  "attribute": "disability",
+  "target_column": "disability_code",
+  "model": "workforce-classifier",
+  "version": "3",
+  "feature_table": "analytics_marts.workforce_features",
+  "baseline_features": [
+    "age",
+    "education_level_code",
+    "marital_status_code",
+    "household_size",
+    "census_region"
+  ],
+  "baseline_auc": 0.732077533193937,
+  "baseline_noise": 0.007579593935626053,
+  "rows": 244328,
+  "seeds": [
+    17,
+    18,
+    19
+  ],
+  "results": [
+    {
+      "id": "public_coverage_unions_the_others",
+      "pums": "PUBCOV",
+      "column": "public_coverage_flag",
+      "strength": "derived",
+      "sourced": true,
+      "tested": true,
+      "alone": 0.7019870978465154,
+      "with_baseline": 0.7864580725062265,
+      "lift": 0.05438053931228948,
+      "noise": 0.005538311052546562,
+      "threshold": 0.02215324421018625,
+      "fires": true
+    },
+    {
+      "id": "medicaid_question_names_disability",
+      "pums": "HINS4",
+      "column": "medicaid_coverage_flag",
+      "strength": "definitional",
+      "sourced": true,
+      "tested": true,
+      "alone": 0.6650024995817717,
+      "with_baseline": 0.7699673473767635,
+      "lift": 0.03788981418282655,
+      "noise": 0.006443953079729253,
+      "threshold": 0.025775812318917013,
+      "fires": true
+    },
+    {
+      "id": "ssi_is_a_disability_programme",
+      "pums": "SSIP",
+      "column": "supplementary_security_income_usd",
+      "strength": "eligibility rule",
+      "sourced": true,
+      "tested": true,
+      "alone": 0.5922655529936228,
+      "with_baseline": 0.7581328380541935,
+      "lift": 0.026055304860256534,
+      "noise": 0.007075226835152139,
+      "threshold": 0.028300907340608555,
+      "fires": false
+    },
+    {
+      "id": "medicare_under_65_is_disability",
+      "pums": "HINS3",
+      "column": "medicare_coverage_flag",
+      "strength": "eligibility rule",
+      "sourced": true,
+      "tested": true,
+      "alone": 0.5948276303708259,
+      "with_baseline": 0.7560232245758801,
+      "lift": 0.023945691381943135,
+      "noise": 0.0069129132619589195,
+      "threshold": 0.027651653047835678,
+      "fires": false
+    },
+    {
+      "id": "vehicles_and_ambulatory_difficulty",
+      "pums": "VEH",
+      "column": "vehicles_available",
+      "strength": "guess",
+      "sourced": false,
+      "tested": true,
+      "alone": 0.6200978412345511,
+      "with_baseline": 0.7416885735922816,
+      "lift": 0.009611040398344595,
+      "noise": 0.007673999582364568,
+      "threshold": 0.030695998329458272,
+      "fires": false
+    },
+    {
+      "id": "poverty_ratio",
+      "pums": "POVPIP",
+      "column": null,
+      "strength": "correlational",
+      "sourced": true,
+      "tested": false,
+      "why_not": "the concept is not a column in this warehouse"
+    },
+    {
+      "id": "rent_burden",
+      "pums": "GRPIP",
+      "column": null,
+      "strength": "correlational",
+      "sourced": false,
+      "tested": false,
+      "why_not": "the concept is not a column in this warehouse"
+    }
+  ]
+}

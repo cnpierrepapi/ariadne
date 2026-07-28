@@ -1,0 +1,17 @@
+$ python tools/screen.py
+== can any declared proxy rebuild disability ==
+   244328 rows, 5 baseline features from workforce-classifier v3
+   baseline rebuilds disability at 0.7321 before any candidate is added
+   seeds 17, 18, 19
+
+  candidate                              alone     lift   verdict
+  PUBCOV public_coverage_flag           0.7020  +0.0544   fires
+  HINS4 medicaid_coverage_flag          0.6650  +0.0379   fires
+  SSIP supplementary_security_income_usd  0.5923  +0.0261   silent
+  HINS3 medicare_coverage_flag          0.5948  +0.0239   silent
+  VEH vehicles_available                0.6201  +0.0096   silent  (no source, reasoned from the concept)
+  POVPIP                                                  not tested, the concept is not a column in this warehouse
+  GRPIP                                                   not tested, the concept is not a column in this warehouse
+
+  2 of 5 tested hypotheses moved the number by more than 0.0222, which is the same threshold the exposure check fires on
+  3 did not, and stay in the register as refuted rather than being deleted
