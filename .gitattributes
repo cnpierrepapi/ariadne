@@ -1,0 +1,6 @@
+# The compliance documents are binary. Without this git treats them as text on
+# Windows and rewrites LF to CRLF inside the PDF stream, which corrupts the file
+# on checkout while leaving the working copy looking fine.
+*.pdf binary
+*.png binary
+*.parquet binary
