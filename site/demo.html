@@ -361,7 +361,7 @@
   </div>
 
   <div class="dpanel">
-    <div class="ph"><span>the same column, three statutes</span><b>only one of them cares</b></div>
+    <div class="ph"><span>the same column, four statutes</span><b>only one of them cares</b></div>
     <div class="pb">
       <p>
         Which columns are restricted is declared in a policy pack rather than written into the
@@ -374,15 +374,66 @@
           <tbody>
             <tr><td><code>employment_us</code></td><td>columns tagged protected_attribute</td><td class="n">nothing to report</td></tr>
             <tr><td><code>ecoa</code></td><td>protected bases under fair lending</td><td class="n">nothing to report</td></tr>
+            <tr><td><code>canada</code></td><td>the section 3 grounds, by tag</td><td class="n">nothing to report</td></tr>
             <tr><td><code>eu_ai_act</code></td><td>protected attributes and personal data</td><td class="a">examine, Article 10(2)(f)</td></tr>
           </tbody>
         </table>
       </div>
       <p>
-        The first two are correct to stay quiet. Insurance coverage genuinely is not a protected
-        characteristic in US employment law. The EU AI Act asks for examination of bias affecting
-        fundamental rights rather than listing forbidden columns, so it catches it. The difference
-        between silence and a finding is a line of YAML, not a code change.
+        The first three are correct to stay quiet. Insurance coverage genuinely is not an
+        enumerated ground in US employment law or in the Canadian Human Rights Act. The EU AI Act
+        asks for examination of bias affecting fundamental rights rather than listing forbidden
+        columns, so it catches it. The difference between silence and a finding is a line of YAML,
+        not a code change.
+      </p>
+      <p>
+        <b>Canada being quiet by tag is exactly why the two layers are both needed.</b> Disability
+        is an enumerated ground under section 3, and the delta watch in step 03 fires on it under
+        the Canadian pack regardless, because it measures what the model can rebuild rather than
+        reading what somebody labelled.
+      </p>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>two columns nobody changed</span><b>four regimes, four readings</b></div>
+    <div class="pb">
+      <p>
+        Nothing about the warehouse differs between these rows. Same graph, same tags, same engine.
+        Only the named statute changes.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>attribute</th><th>canada</th><th>ecoa</th><th>employment_us</th><th>eu_ai_act</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>age</code></td>
+              <td class="a">prohibited</td>
+              <td class="p">conditional</td>
+              <td class="a">prohibited</td>
+              <td class="n">examine</td>
+            </tr>
+            <tr>
+              <td><code>marital_status_code</code></td>
+              <td class="a">prohibited</td>
+              <td class="a">prohibited</td>
+              <td class="n">examine</td>
+              <td class="n">examine</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Age is the clearest case. ECOA permits it in a demonstrably and statistically sound credit
+        scoring system, which is why it is only conditional there. The Canadian Human Rights Act
+        enumerates age with no equivalent carve out, so a scoring model defensible under ECOA on
+        that column is not defensible in Canada on the same reasoning. The ADEA agrees with Canada,
+        the EU AI Act asks only that it be examined and documented.
+      </p>
+      <p>
+        The priority of what gets filed follows from the basis rather than from a guess, so
+        <code>marital_status_code</code> is filed CRITICAL under the Canadian pack and LOW under
+        the US employment pack, off the same finding.
       </p>
     </div>
   </div>
@@ -479,7 +530,9 @@
     </p>
     <p>
       This step is <b>not built yet</b> and there is deliberately nothing here pretending to be it.
-      The two US packs and the EU pack already exist and drive the verdicts you saw in step 04.
+      All four packs behind those three jurisdictions already exist and drive the verdicts you saw
+      in step 04. What is missing is the generator that turns a night's findings into a dated
+      document.
     </p>
     <div class="jur">
       <span>United States</span>

@@ -1,0 +1,148 @@
+### the pack, resolved against this warehouse
+
+Canadian Human Rights Act  (canada)
+  Canadian Human Rights Act, RSC 1985 c. H-6, section 3
+  jurisdiction: Canada, federally regulated sectors
+  citation: RSC 1985 c. H-6, s. 3; s. 3(2); s. 3(3); s. 15
+  tags in scope: protected_attribute
+  applies to: Employment and the provision of goods, services, facilities or accommodation customarily available to the general public, by federally regulated employers and service providers: banks, telecommunications carriers, air, rail and marine transport, federal Crown corporations and the federal public service. Provincially regulated employers are governed by a provincial or territorial code instead.
+
+  restricted attributes, 9:
+    prohibited   age              age                      (tags only)
+                 RSC 1985 c. H-6, s. 3
+    prohibited   ancestry         ancestry_code            (tags only)
+                 RSC 1985 c. H-6, s. 3
+    prohibited   citizenship      citizenship_code      
+                 RSC 1985 c. H-6, s. 3
+    prohibited   disability       disability_code       
+                 RSC 1985 c. H-6, s. 3
+    prohibited   marital_status   marital_status_code   
+                 RSC 1985 c. H-6, s. 3
+    prohibited   nativity         nativity_code         
+                 RSC 1985 c. H-6, s. 3
+    prohibited   place_of_birth   place_of_birth_code      (tags only)
+                 RSC 1985 c. H-6, s. 3
+    prohibited   race             race_code             
+                 RSC 1985 c. H-6, s. 3
+    prohibited   sex              sex_code              
+                 RSC 1985 c. H-6, s. 3, s. 3(2)
+
+  not measurable by reconstruction, 3:
+    age              continuous, and the measurement compares two groups
+    place_of_birth   no categories declared, so there is no reference group to compare against
+    ancestry         no categories declared, so there is no reference group to compare against
+
+
+### the tag driven check, one warehouse, four regimes, one unchanged engine
+
+--- canada ---
+== restricted attribute reaches a deployed model ==
+   under Canadian Human Rights Act, RSC 1985 c. H-6, section 3
+   watching columns tagged protected_attribute
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 3 prohibited
+    prohibited   age                    tagged on the feature itself
+                 age, RSC 1985 c. H-6, s. 3
+    prohibited   marital_status_code    tagged on the feature itself
+                 marital_status, RSC 1985 c. H-6, s. 3
+    prohibited   race_code              warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                 race, RSC 1985 c. H-6, s. 3
+
+  workforce-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 10 columns, 2 prohibited
+    prohibited   age                    tagged on the feature itself
+                 age, RSC 1985 c. H-6, s. 3
+    prohibited   marital_status_code    tagged on the feature itself
+                 marital_status, RSC 1985 c. H-6, s. 3
+
+
+--- ecoa ---
+== restricted attribute reaches a deployed model ==
+   under Equal Credit Opportunity Act, Regulation B
+   watching columns tagged protected_attribute
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 2 prohibited, 1 conditional
+    prohibited   marital_status_code    tagged on the feature itself
+                 marital_status, 15 USC 1691(a)(1)
+    prohibited   race_code              warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                 race, 15 USC 1691(a)(1)
+    conditional  age                    tagged on the feature itself
+                 age, 12 CFR 1002.2(p)
+
+  workforce-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 10 columns, 1 prohibited, 1 conditional
+    prohibited   marital_status_code    tagged on the feature itself
+                 marital_status, 15 USC 1691(a)(1)
+    conditional  age                    tagged on the feature itself
+                 age, 12 CFR 1002.2(p)
+
+
+--- employment_us ---
+== restricted attribute reaches a deployed model ==
+   under Title VII of the Civil Rights Act, the ADA, and the ADEA
+   watching columns tagged protected_attribute
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 2 prohibited, 1 examine
+    prohibited   age                    tagged on the feature itself
+                 age, 29 USC 623, ADEA
+    prohibited   race_code              warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                 race, 42 USC 2000e-2(a), Title VII
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Not a federally protected class in employment, though many states protect it and it correlates with sex and with pregnancy.
+
+
+  workforce-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 10 columns, 1 prohibited, 1 examine
+    prohibited   age                    tagged on the feature itself
+                 age, 29 USC 623, ADEA
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Not a federally protected class in employment, though many states protect it and it correlates with sex and with pregnancy.
+
+
+
+--- eu_ai_act ---
+== restricted attribute reaches a deployed model ==
+   under Regulation (EU) 2024/1689, Annex III high risk systems
+   watching columns tagged protected_attribute, personal_data
+
+  income-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.income_features, 15 columns, 1 prohibited, 3 examine
+    prohibited   race_code              warehouse.analytics_marts.dim_person.race_code, 1 hop back
+                 race, Article 10(2)(f), GDPR Article 9(1)
+    examine      age                    tagged on the feature itself
+                 age, Article 10(2)(f)
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Article 10(2)(f)
+    examine      puma_code              warehouse.analytics_marts.dim_person.puma_code, 1 hop back
+                 not a declared attribute, Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+                 in scope because it carries personal_data, and EU AI Act watches that tag
+
+  workforce-classifier_3  (mlflow_production)
+  trained on warehouse.analytics_marts.workforce_features, 10 columns, 3 examine
+    examine      age                    tagged on the feature itself
+                 age, Article 10(2)(f)
+    examine      marital_status_code    tagged on the feature itself
+                 marital_status, Article 10(2)(f)
+    examine      public_coverage_flag   warehouse.analytics_marts.dim_person.public_coverage_flag, 1 hop back
+                 not a declared attribute, Article 10(2)(f), Article 10(2)(g), Article 9, Annex IV
+                 in scope because it carries personal_data, and EU AI Act watches that tag
+
+
+
+### what Canada would file for the workforce model, dry run
+== 3 finding(s) for workforce-classifier under Canadian Human Rights Act, RSC 1985 c. H-6, section 3 ==
+
+  [already open] CRITICAL age reaches workforce-classifier_3
+      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
+      restricted attribute reaches a deployed model
+  [already open] CRITICAL marital_status_code reaches workforce-classifier_3
+      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
+      restricted attribute reaches a deployed model
+  [already open] HIGH     disability (With a disability) became easier to rebuild from workforce-classifier
+      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
+      reconstructability of a protected attribute moved
+
+  nothing was written. pass --raise to file these.
