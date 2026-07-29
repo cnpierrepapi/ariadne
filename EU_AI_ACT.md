@@ -39,10 +39,17 @@ decides something about a person using data assembled from a warehouse:
 | Essential public and private services | Benefits, housing, utilities | Postcode, household composition |
 | Biometrics, law enforcement, migration, justice | Various | Out of scope for this reference stack |
 
-The reference stack in this repository models the creditworthiness case, because
-that is where the data is public and the rules are oldest. The machinery is not
-specific to it. What changes between these rows is which attributes are sensitive
-and which statute names them, and both are declared rather than compiled in.
+The reference stack in this repository carries two of these rows on one warehouse.
+`income-classifier` is the creditworthiness case, because that is where the data is
+public and the rules are oldest. `workforce-classifier` is the employment case,
+reading the same `dim_person` through a different feature table. They disagree about
+the same column: `marital_status_code` is CRITICAL under the Canadian Human Rights
+Act and LOW under US employment law, and both incidents are open in the catalog at
+once.
+
+The machinery is not specific to either. What changes between these rows is which
+attributes are sensitive and which statute names them, and both are declared rather
+than compiled in.
 
 ## What the Act asks, and what Ariadne produces
 
@@ -105,6 +112,26 @@ it. `tools/trace.py model <urn>` names the feature table, every feature, and for
 each one the chain back to the source column. Because it reads the catalog rather
 than a document, it cannot drift out of date the way a written annex does.
 
+`tools/complydoc.py` produces the document itself, for one dated run:
+
+```bash
+python tools/complydoc.py --model workforce-classifier --policy eu_ai_act \
+    --operator "Acme Financial" --out report.pdf
+```
+
+It is **not a rendering of the policy pack**. A pack is true every day of the year
+and therefore evidences nothing about whether anyone actually looked. The record
+covers the system as it was that day read from the registry, what changed since the
+previous assessment, the method, **every measurement including the ones that found
+nothing**, the findings with the column's provenance hop by hop, the catalog
+references read back from DataHub, the duties concerning the decision, the scope
+limits, and a sign-off block.
+
+The silent measurements are load bearing. A report listing only what fired is
+indistinguishable from one where the remaining checks were never run, and an
+authority asking whether you examined an attribute has no way to tell the two
+apart. Section 4 names all sixteen.
+
 ### Article 12, record keeping
 
 Automatic recording of events over the system's lifetime. `state/exposure.json`
@@ -126,6 +153,31 @@ Anyone whose model is fed by a warehouse they own is exercising that control
 whether or not they realise it. Column level lineage is how you establish which
 inputs you actually control.
 
+### Article 86, explanation of individual decision making
+
+Where a deployer takes a decision on the basis of output from an Annex III system,
+and that decision produces legal effects or similarly significantly affects the
+person, the person may request clear and meaningful explanations of the role of the
+system in the procedure and of the main elements of the decision.
+
+This is a different shape of obligation from every other one on this page. The rest
+concern **which columns are restricted**. This one concerns **the decision**, and no
+amount of column analysis discharges it on its own.
+
+So each policy pack declares a `duties:` block alongside its attributes, and the
+generated record carries a section stating, for each duty, what the run supplies
+and what it does not. For Article 86 the run supplies the main elements at the level
+of the model, being the features it consumed and the provenance of each, so an
+explanation can be checked rather than asserted. It does not supply the per person
+explanation, and it does not deliver anything on request. Both are named in the
+document rather than left to be assumed.
+
+The same machinery carries the adverse action notice under 15 USC 1691(d), and
+Quebec Law 25 s.12.1, which grants a right to be informed that a decision was based
+exclusively on automated processing and to the principal factors behind it. US
+federal employment law has no equivalent duty, and the pack says so, because the
+absence is a finding about the law rather than a gap in coverage.
+
 ## What Ariadne does not do
 
 Stated plainly, because a compliance tool that overstates its coverage is worse
@@ -146,6 +198,10 @@ than none.
 - **It needs the sensitive attribute to exist somewhere** in order to measure
   reconstructability. Where it does not, public reference data is the fallback,
   and that path is not built yet.
+- **It does not run itself yet.** Article 9 is continuous and the delta watch is
+  built for that, but the schedule is not wired. The checks and the record are
+  produced by a command today, which means the continuity is a property of your
+  CI, not of Ariadne.
 
 ## Running the checks against your own stack
 
@@ -159,6 +215,11 @@ python tools/reconstruct.py --model <name> --repeats 3
 # record it, and compare against the last recording
 python tools/exposure.py record
 python tools/exposure.py check --fail-on-violation
+
+# file what it found into the catalog, and produce the record for that run
+python tools/incident.py --model <name> --policy eu_ai_act --raise
+python tools/complydoc.py --model <name> --policy eu_ai_act \
+    --operator "<legal entity>" --out report.pdf
 ```
 
 Both `--fail-on-violation` flags exit non zero, so either check drops into CI as a

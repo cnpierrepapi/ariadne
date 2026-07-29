@@ -216,9 +216,14 @@ def main() -> int:
         declared = attributes()
         print(f"{len(declared)} attributes declared for this warehouse: "
               f"{', '.join(sorted(declared))}\n")
-        for regime in available():
-            policy = Policy(regime)
-            print(f"  {regime:16} {policy.name:16} "
+        # widths come from the packs themselves. a fixed width was fine for three
+        # regimes and broke the moment one arrived with a longer name than the
+        # pad, which is the sort of thing that silently uglifies captured output.
+        loaded = [(regime, Policy(regime)) for regime in available()]
+        wid = max(len(regime) for regime, _ in loaded)
+        wname = max(len(policy.name) for _, policy in loaded)
+        for regime, policy in loaded:
+            print(f"  {regime:{wid}}  {policy.name:{wname}}  "
                   f"{len(policy.restricted)} attributes, "
                   f"tags {', '.join(policy.protected_tags)}")
         return 0

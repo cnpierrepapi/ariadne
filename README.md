@@ -17,12 +17,21 @@ and answers the questions that only the graph can answer:
   A structural fact, invisible to any monitor that only watches distributions.
 - **Can the model rebuild an attribute it does not contain?** Removing a column is
   only a control if what remains does not carry the same information.
+- **What do you hand a regulator afterwards?** A record of one dated assessment,
+  naming every measurement including the ones that found nothing, because a report
+  showing only what fired cannot be told apart from one where the rest never ran.
 
 > **High risk obligations under the EU AI Act attach on 2 August 2026.** Article 10
 > requires examination for bias, Article 9 requires it continuously rather than
 > once, and Annex IV requires documented data provenance. Ariadne produces all
 > three from the catalog rather than from a written annex that drifts.
 > **[How Ariadne maps to the Act, article by article](EU_AI_ACT.md)**
+
+**[ariadne-five.vercel.app](https://ariadne-five.vercel.app)** walks the whole thing
+against captured runs, and **[/demo](https://ariadne-five.vercel.app/demo)** is the
+six step version: the estate, the daily runs, the rebuild, where the column came
+from, the writeback with live links into DataHub, and the document that comes out at
+the end. Every figure on it was measured. Nothing on it was drawn.
 
 ## Why lineage rather than statistics
 
@@ -82,7 +91,11 @@ python tools/verify.py                               # is the thread intact?
 python tools/sentinel.py                             # does any invariant fire?
 
 # file what it found back into the catalog. nothing is written without --raise
-python tools/incident.py --model workforce-classifier --policy employment_us
+python tools/incident.py --model workforce-classifier --policy employment_us --raise
+
+# the record the operator hands a regulator for that run
+python tools/complydoc.py --model workforce-classifier --policy eu_ai_act \
+    --operator "Acme Financial" --out report.pdf
 ```
 
 ### Why postgres is ingested twice
@@ -143,7 +156,38 @@ python tools/screen.py
 
 # work out what a column holds with no tags at all
 python tools/identify.py public.raw_person
+
+# which statutes are declared, and what one of them makes of this warehouse
+python tools/policy.py list
+python tools/policy.py show canada
+
+# file findings as incidents, and produce the record for that run
+python tools/incident.py --model income-classifier --policy ecoa --raise
+python tools/complydoc.py --model income-classifier --policy canada --out report.pdf
 ```
+
+### The same warehouse, read four ways
+
+`policy/attributes.yml` describes the warehouse, which is true under any law. Each
+regime file describes a law and names **attributes, never columns**, so a pack moves
+to a different warehouse unchanged. Nothing about any statute is compiled into a tool.
+
+| Pack | The law | Restricted |
+| --- | --- | --- |
+| `canada` | Canadian Human Rights Act RSC 1985 c. H-6 s.3 | 9, all prohibited |
+| `ecoa` | Equal Credit Opportunity Act, 15 USC 1691 | 8 |
+| `employment_us` | Title VII, ADEA, ADA, 41 CFR 60-3 | 9 |
+| `eu_ai_act` | Regulation (EU) 2024/1689, Annex III | 9 |
+
+The disagreement is the point. `age` reads prohibited under Canada, conditional
+under ECOA, prohibited under US employment law and examine under the AI Act.
+`marital_status_code` reads prohibited, prohibited, examine, examine. One column,
+one graph, four answers, and each one cites the provision it came from.
+
+Each pack also declares a `duties:` block, which is the obligation attaching to the
+**decision** rather than to a column: the adverse action notice under 15 USC 1691(d),
+Article 86 explanation, Quebec Law 25 s.12.1. Each states what the run supplies and,
+by name, what it does not.
 
 `--fail-on-violation` exits non zero, so `sentinel.py` drops into CI as a gate on a
 dbt or training pipeline.
@@ -172,7 +216,19 @@ dbt or training pipeline.
 | `tools/sentinel.py` | Structural invariants over the graph |
 | `tools/reconstruct.py` | Measures whether the features can rebuild an attribute the model excludes |
 | `tools/exposure.py` | Records that measurement over time and fires when it moves |
+| `tools/history.py` | The recording history, and the single definition of what counts as a change |
+| `tools/screen.py` | Measures the declared proxy hypotheses, and lets most of them fail |
+| `tools/identify.py` | Works out what a column holds when it carries no tags at all |
+| `tools/policy.py` | Loads a regime and resolves it against the warehouse |
+| `tools/incident.py` | Files findings back into DataHub, regime named in the title |
+| `tools/complydoc.py` | The per run record an operator hands a regulator |
+| `tools/blast.py` | Before the change lands: which models does this break |
+| `tools/rootcause.py` | After it did: what actually moved this model |
+| `tools/context.py`, `tools/agree.py` | DataHub's own agent surfaces, and whether the two agree |
 | `tools/verify.py` | Post-ingest checks that the catalog holds what it should |
+| `policy/` | `attributes.yml` describes the warehouse, one file per statute describes a law |
+| `site/` | The deployed walkthrough, including `site/docs/` with three generated records |
+| `skills/` | The ML impact skill, filed upstream as datahub-skills#66 |
 | `state/exposure.json` | Measurement history, which is the Article 12 record keeping trail |
 | `EU_AI_ACT.md` | How each check maps onto the Act, and what it does not cover |
 
@@ -195,10 +251,12 @@ silently, which is why they were worth writing up rather than working around.
 
 Built for the DataHub Agent Hackathon, Challenge 3, Production ML Agents.
 
-Working today: the full stack above, six hop lineage from raw census columns to a
-registered model, column level traversal across siblings, the protected attribute
-invariant with phantom node warnings, the reconstruction measurement, and the delta
-watch. All proven end to end on captured runs in [`examples/`](examples/).
+Working today: the full stack above, seven hop column lineage from raw census
+columns to a registered model, column level traversal across siblings, the
+protected attribute invariant with phantom node warnings, the reconstruction
+measurement, the delta watch, four statutory regimes over the one warehouse,
+findings filed back into DataHub as incidents, and the per run compliance record.
+All proven end to end on captured runs in [`examples/`](examples/).
 
 Note that `income_features` currently ships with `race_code` and `puma_code`
 selected. Both are demo changes, committed deliberately so the findings reproduce.
@@ -207,8 +265,16 @@ arrives tagged and the invariant names it, while `puma_code` is tagged as person
 data and not as a protected attribute, so nothing reading tags can see it and only
 the delta watch does. Remove those two lines to get the clean state back.
 
-Writing findings back into DataHub as incidents on the affected model is designed
-and not yet built.
+Findings are written back into DataHub as incidents. **They are filed on the feature
+table, not on the model**, because `raiseIncident` accepts no ML entity type at all,
+which is the subject of [datahub#18685](https://github.com/datahub-project/datahub/pull/18685).
+The reference instance currently holds 18 active incidents across two feature tables,
+and the incident title names the regime, so the same column can be open at two
+severities under two statutes at once. Nothing is written without `--raise`.
+
+Not built: the nightly schedule. The documents and the incidents are produced by a
+command today, not unattended, and [`/demo`](https://ariadne-five.vercel.app/demo)
+says so in the same words.
 
 ## License
 

@@ -1,5 +1,6 @@
 9 attributes declared for this warehouse: age, ancestry, citizenship, disability, marital_status, nativity, place_of_birth, race, sex
 
-  ecoa             ECOA             8 attributes, tags protected_attribute
-  employment_us    Employment US    9 attributes, tags protected_attribute
-  eu_ai_act        EU AI Act        9 attributes, tags protected_attribute, personal_data
+  canada         Canadian Human Rights Act  9 attributes, tags protected_attribute
+  ecoa           ECOA                       8 attributes, tags protected_attribute
+  employment_us  Employment US              9 attributes, tags protected_attribute
+  eu_ai_act      EU AI Act                  9 attributes, tags protected_attribute, personal_data
