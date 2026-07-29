@@ -16,11 +16,11 @@
   <a class="wordmark" href="/">ARIADNE</a>
   <nav>
     <a href="/">overview</a>
+    <a href="/demo">demo</a>
     <a href="/run">the run</a>
     <a href="/surfaces" class="here">surfaces</a>
     <a href="/agents">agents</a>
     <a href="/mcp">mcp</a>
-    <a href="/graph">graph</a>
     <a href="/register">register</a>
     <a href="https://github.com/cnpierrepapi/ariadne">source</a>
   </nav>
@@ -54,13 +54,13 @@
           <td><code>context graph</code></td>
           <td>The product. Column level lineage from a feature back to the raw census extract, and forward to whatever is serving.</td>
           <td class="v">7 hops</td>
-          <td><a href="/graph">graph</a></td>
+          <td><a href="/demo#trace">demo</a></td>
         </tr>
         <tr>
           <td><code>ingestion connectors</code></td>
           <td>postgres, dbt and mlflow. Every edge in the graph was produced by one of them. Nothing is hand emitted.</td>
           <td class="v">3 connectors</td>
-          <td><a href="/graph">graph</a></td>
+          <td><a href="/demo#trace">demo</a></td>
         </tr>
         <tr>
           <td><code>MCP server</code></td>
@@ -90,13 +90,13 @@
           <td><code>Incidents API</code></td>
           <td>Findings written back so they land where a data team already looks, rather than in a report nobody opens.</td>
           <td class="v">9 raised</td>
-          <td><a href="/incidents">incidents</a></td>
+          <td><a href="/demo#writeback">demo</a></td>
         </tr>
         <tr>
           <td><code>tags and structured metadata</code></td>
           <td>Governance tags declared in dbt and read back through the sibling graph, which is the only way to see them from a lineage walk.</td>
           <td class="v">14 columns</td>
-          <td><a href="/graph">graph</a></td>
+          <td><a href="/demo#trace">demo</a></td>
         </tr>
       </tbody>
     </table>
@@ -105,7 +105,7 @@
 
 <section class="block" style="max-width:none">
   <span class="label">what it cost to find out</span>
-  <h2>Four things that were not in the documentation</h2>
+  <h2>Five things that were not in the documentation</h2>
   <p class="lede">
     Each of these was found by running against a real instance, and each fails silently,
     which is the reason they are worth writing down. A loud failure teaches you something
@@ -138,8 +138,17 @@
       dashboards and charts carry the aspect. The feature table turned out to be the
       better home anyway, since that is where a fix goes.
     </li>
+    <li>
+      <b>One table exists three times, and only one copy carries the tags</b>
+      dbt, Postgres and MLflow each hold their own entity for the same table, joined as
+      siblings. Governance tags declared in dbt land on the dbt entity, and there are
+      <b>14</b> of them on <code>dim_person</code>. Lineage traversal returns Postgres
+      urns, which carry <b>zero</b>. So the obvious question, asked the obvious way,
+      returns nothing and reads as all clear. Every check here resolves siblings and
+      reads the union before it answers.
+    </li>
   </ul>
-  <h3>All four went back to the project</h3>
+  <h3>Four of the five went back to the project</h3>
   <div class="table-scroll">
     <table style="min-width:640px">
       <thead><tr><th>contribution</th><th>what it fixes</th><th>where</th></tr></thead>

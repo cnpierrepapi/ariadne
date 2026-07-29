@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the demo</title>
+<meta name="description" content="What Ariadne looks like running inside a warehouse: the daily run, what the model can rebuild, where the column came from, and the findings filed back into DataHub.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">overview</a>
+    <a href="/demo" class="here">demo</a>
+    <a href="/run">the run</a>
+    <a href="/surfaces">surfaces</a>
+    <a href="/agents">agents</a>
+    <a href="/mcp">mcp</a>
+    <a href="/register">register</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<div class="replay">
+  <b>recorded run</b>
+  <span>Every number and every line of output below was produced on a live instance on 27 and 28 July 2026 and is committed in <code>examples/</code>. Nothing here is generated on page load. The DataHub links are live, so the findings can be checked against the catalog itself.</span>
+</div>
+
+<dl class="chrome">
+  <div>
+    <dt>warehouse</dt>
+    <dd>analytics_marts</dd>
+  </div>
+  <div>
+    <dt>catalog</dt>
+    <dd class="live">datahub v1.5.0.6</dd>
+  </div>
+  <div>
+    <dt>models watched</dt>
+    <dd>2 in production</dd>
+  </div>
+  <div>
+    <dt>last run</dt>
+    <dd>28 Jul, 08:34 UTC</dd>
+  </div>
+  <div>
+    <dt>findings</dt>
+    <dd class="fire">1 new</dd>
+  </div>
+</dl>
+
+<div class="stepper" role="tablist" aria-label="Demo steps">
+  <button class="stepbtn" role="tab" aria-selected="true" data-step="estate"><span class="n">01</span>estate</button>
+  <button class="stepbtn" role="tab" aria-selected="false" data-step="history"><span class="n">02</span>daily runs</button>
+  <button class="stepbtn fires" role="tab" aria-selected="false" data-step="rebuild"><span class="n">03</span>the rebuild</button>
+  <button class="stepbtn" role="tab" aria-selected="false" data-step="trace"><span class="n">04</span>where it came from</button>
+  <button class="stepbtn" role="tab" aria-selected="false" data-step="writeback"><span class="n">05</span>writeback</button>
+</div>
+
+<div class="stage">
+
+<!-- ================= 01 ESTATE ================= -->
+<section class="scene on" id="estate" role="tabpanel">
+  <span class="label">step 01, what it is attached to</span>
+  <h2>Ariadne runs where the data already is</h2>
+  <p>
+    The product is an agent inside your own infrastructure, next to the warehouse and next to
+    your catalog. Nothing is uploaded to us and no warehouse credential leaves your network.
+    That is not a privacy flourish, it is the only arrangement in which the measurement in
+    step 03 is possible at all: <b>DataHub holds metadata and never holds rows</b>, and
+    rebuilding an attribute needs rows.
+  </p>
+
+  <div class="dpanel">
+    <div class="ph"><span>source</span><b>reference estate, live</b></div>
+    <div class="pb">
+      <div class="modes">
+        <div class="mode on">
+          <span class="st">connected</span>
+          <h3>Reference estate</h3>
+          <p>The instance this recording was made against. Real Postgres, real dbt project,
+             real MLflow registry, 378,817 US Census records for California 2018.</p>
+        </div>
+        <div class="mode">
+          <span class="st">in a deployment</span>
+          <h3>Your DataHub</h3>
+          <p>One address and one access token, read scoped. The catalog already knows which
+             dataset feeds which model, so it is never asked for separately.</p>
+        </div>
+        <div class="mode">
+          <span class="st">in a deployment</span>
+          <h3>Your warehouse</h3>
+          <p>A read-only connection, or a sampled extract of the feature table. Needed only
+             for the rebuild, because no catalog anywhere holds rows.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>what one field buys</span><b>the whole graph</b></div>
+    <div class="pb">
+      <p>
+        A tool that asked you to name the model and then name its dataset would be asking you
+        to supply the join by hand. That join is the entire finding. Ariadne asks for the
+        catalog and reads the rest, which is why the chain in step 04 is seven hops long and
+        none of it was typed in.
+      </p>
+      <pre class="term"><code><span class="cmd">ariadne connect --catalog $DATAHUB_GMS --token $DATAHUB_TOKEN</span>
+  <span class="ok">connected</span>   datahub v1.5.0.6
+  discovered   2 models in production
+               8 datasets across 3 platforms
+               dbt, postgres, mlflow joined as siblings
+  <span class="dim">no model or dataset pairing supplied, none needed</span></code></pre>
+    </div>
+  </div>
+
+  <div class="navbtns">
+    <button class="navbtn" data-go="prev" disabled>Back</button>
+    <button class="navbtn primary" data-go="next">See the daily runs</button>
+    <span class="of">step 1 of 5</span>
+  </div>
+</section>
+
+<!-- ================= 02 HISTORY ================= -->
+<section class="scene" id="history" role="tabpanel">
+  <span class="label">step 02, what it does every night</span>
+  <h2>Most nights it has nothing to say</h2>
+  <p>
+    Each night Ariadne re-measures every production model and appends the result to a history
+    file. The value is not in the night it fires, it is in the nights it does not: a silent
+    record is what makes a single alarm mean something. Below is the actual recorded history,
+    five runs across two models, <b>read from <code>state/exposure.json</code> in the repository</b>.
+  </p>
+
+  <div class="dpanel">
+    <div class="ph"><span>run history</span><b>5 runs, 2 models</b></div>
+    <div class="pb" style="padding:0">
+      <div class="runs">
+        <div class="runrow">
+          <span class="when">27 Jul 09:28</span>
+          <span class="what">income-classifier <em>v2, 11 features</em></span>
+          <span class="acc">0.8767</span>
+          <span class="verdict">baseline</span>
+        </div>
+        <div class="runrow fires">
+          <span class="when">27 Jul 09:31</span>
+          <span class="what">income-classifier <em>v3, gained puma_code</em></span>
+          <span class="acc">0.8758</span>
+          <span class="verdict">3 findings</span>
+        </div>
+        <div class="runrow">
+          <span class="when">27 Jul 13:21</span>
+          <span class="what">workforce-classifier <em>v1, 5 features</em></span>
+          <span class="acc">0.6854</span>
+          <span class="verdict">baseline</span>
+        </div>
+        <div class="runrow">
+          <span class="when">27 Jul 13:30</span>
+          <span class="what">workforce-classifier <em>v2, gained vehicles_available</em></span>
+          <span class="acc">0.6955</span>
+          <span class="verdict">quiet</span>
+        </div>
+        <div class="runrow fires">
+          <span class="when">28 Jul 08:34</span>
+          <span class="what">workforce-classifier <em>v3, gained public_coverage_flag</em></span>
+          <span class="acc">0.7310</span>
+          <span class="verdict">1 finding</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>read the accuracy column</span><b class="fire">it goes the wrong way</b></div>
+    <div class="pb">
+      <p>
+        Accuracy rose on both of the runs that changed something, and rose most on the run that
+        produced a finding: <b>0.6955 to 0.7310, up three and a half points</b>. Every dashboard,
+        every model monitor and every approval gate in the building read that as an improvement
+        and were right to. There was no drift to detect and no degradation to alert on, because
+        nothing degraded. A column arrived.
+      </p>
+      <p>
+        This is the honest version of the pitch. It is not that monitoring sees nothing. It is
+        that monitoring sees an improvement and says ship it.
+      </p>
+    </div>
+  </div>
+
+  <div class="navbtns">
+    <button class="navbtn" data-go="prev">Back</button>
+    <button class="navbtn primary" data-go="next">Open the run that fired</button>
+    <span class="of">step 2 of 5</span>
+  </div>
+</section>
+
+<!-- ================= 03 REBUILD ================= -->
+<section class="scene" id="rebuild" role="tabpanel">
+  <span class="label">step 03, the measurement</span>
+  <h2>What can this model work out about a person?</h2>
+  <p>
+    The model is not asked what it was given. It is asked what it can rebuild. For every
+    attribute a policy pack names, Ariadne trains a separate classifier that tries to recover
+    that attribute from the model's own feature set, with the attribute held out of its own
+    inputs. <b>Sixteen measurements ran. One moved.</b>
+  </p>
+
+  <div class="dpanel">
+    <div class="ph"><span>workforce-classifier, v2 against v3</span><b class="fire">1 of 16 beyond noise</b></div>
+    <div class="pb" style="padding:0">
+      <div class="gauges">
+
+        <div class="gauge fires">
+          <div class="top">
+            <span class="who">disability <em>with a disability against without</em></span>
+            <span class="mv">0.7489 &rarr; 0.7883 &nbsp; +0.0394, 12x noise</span>
+          </div>
+          <div class="bar">
+            <span class="now" style="width:57.7%"></span>
+            <span class="was" style="width:49.8%"></span>
+          </div>
+          <div class="scale"><span>chance, 0.50</span><span>perfect, 1.00</span></div>
+        </div>
+
+        <div class="gauge">
+          <div class="top">
+            <span class="who">marital status <em>widowed against married</em></span>
+            <span class="mv">0.8378 &rarr; 0.8516 &nbsp; +0.0138, silent</span>
+          </div>
+          <div class="bar">
+            <span class="now" style="width:70.3%"></span>
+            <span class="was" style="width:67.6%"></span>
+          </div>
+          <div class="scale"><span>chance, 0.50</span><span>perfect, 1.00</span></div>
+        </div>
+
+        <div class="gauge">
+          <div class="top">
+            <span class="who">sex <em>female against male</em></span>
+            <span class="mv">0.6025 &rarr; 0.6077 &nbsp; +0.0052, silent</span>
+          </div>
+          <div class="bar">
+            <span class="now" style="width:21.5%"></span>
+            <span class="was" style="width:20.5%"></span>
+          </div>
+          <div class="scale"><span>chance, 0.50</span><span>perfect, 1.00</span></div>
+        </div>
+
+        <div class="gauge">
+          <div class="top">
+            <span class="who">race <em>Black alone against White alone</em></span>
+            <span class="mv">0.7105 &rarr; 0.7114 &nbsp; +0.0009, silent</span>
+          </div>
+          <div class="bar">
+            <span class="now" style="width:42.3%"></span>
+            <span class="was" style="width:42.1%"></span>
+          </div>
+          <div class="scale"><span>chance, 0.50</span><span>perfect, 1.00</span></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>why 0.0394 counts and 0.0138 does not</span><b>the threshold is measured</b></div>
+    <div class="pb">
+      <p>
+        The alarm threshold is not a number somebody chose. Each measurement is repeated across
+        three seeds and the threshold is four times the pooled deviation, floored at 0.02. So a
+        noisy attribute has to move further before it is believed, which is why several groups
+        here moved in the same direction and correctly stayed quiet. The largest silent mover
+        was widowed at +0.0138, comfortably under the floor.
+      </p>
+      <p>
+        The four rows above are a sample. The full sixteen for both versions are in
+        <code>state/exposure.json</code>, including every measurement that found nothing, because
+        an omitted measurement and a clean one look identical after the fact.
+      </p>
+      <pre class="term"><code><span class="cmd">python tools/rootcause.py --model workforce-classifier --policy eu_ai_act --via mcp</span>
+== why did workforce-classifier move ==
+   comparing version 2 (2026-07-27T13:30:31) with version 3 (2026-07-28T08:34:06)
+
+  accuracy went up, 0.6955 to 0.7310 (+0.0355)
+  so nothing that watches model quality had a reason to object
+
+  1 measurement moved beyond noise
+    <span class="hit">disability (With a disability against Without a disability)  0.7489 to 0.7883  +0.0394, 12x the noise</span></code></pre>
+    </div>
+  </div>
+
+  <div class="navbtns">
+    <button class="navbtn" data-go="prev">Back</button>
+    <button class="navbtn primary" data-go="next">Find out why</button>
+    <span class="of">step 3 of 5</span>
+  </div>
+</section>
+
+<!-- ================= 04 TRACE ================= -->
+<section class="scene" id="trace" role="tabpanel">
+  <span class="label">step 04, the cause</span>
+  <h2>One column, added by someone who was right to add it</h2>
+  <p>
+    Benefits administration asked for a coverage flag so onboarding could skip a prompt for
+    people who already had cover. One line of dbt, no health detail, just a flag. Ariadne
+    compares the two training runs, finds the single column the model gained between them, and
+    walks it back through the graph to the point it entered the building.
+  </p>
+
+  <div class="dpanel">
+    <div class="ph"><span>column walk</span><b>7 hops, every edge from a connector</b></div>
+    <div class="pb">
+      <ol class="chain">
+        <li class="origin">raw_person.pubcov
+          <span class="via">census extract via folktables, landed by the postgres connector</span></li>
+        <li>stg_person.public_coverage_flag
+          <span class="via">staging, renamed here, which is why a search by name would have missed it</span></li>
+        <li>dim_person.public_coverage_flag
+          <span class="via">marts, tagged personal_data at this point and nowhere after</span></li>
+        <li>workforce_features.public_coverage_flag
+          <span class="via">the feature table, carrying no tag at all</span></li>
+        <li>DataProcessInstance
+          <span class="via">the training run, emitted by the mlflow connector</span></li>
+        <li class="target">workforce-classifier_3
+          <span class="via">mlflow_production, serving</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>the two things that made it invisible</span><b class="fire">neither is a bug</b></div>
+    <div class="pb">
+      <p>
+        <b>It changed its name.</b> The column enters as <code>pubcov</code> and reaches the model
+        as <code>public_coverage_flag</code>. Nobody searching the warehouse for one would find the
+        other, and the rename is perfectly ordinary staging hygiene.
+      </p>
+      <p>
+        <b>The tag stops one hop short.</b> <code>dim_person</code> carries the
+        <code>personal_data</code> tag. The feature table built from it does not. So a governance
+        scanner that reads tags looks straight at the column the model is using and sees an
+        untagged field. That gap is the whole problem, and it is one hop wide.
+      </p>
+      <pre class="term"><code><span class="cmd">python tools/trace.py workforce-classifier --column public_coverage_flag</span>
+  enters at postgres:raw_person, 7 hops back
+  <span class="hit">called pubcov where it enters, so a search by name would not have found it</span>
+  defined in models/staging/sources.yml
+  defined in models/staging/stg_person.sql
+  defined in models/marts/dim_person.sql
+  defined in models/marts/workforce_features.sql
+
+  cause: public_coverage_flag</code></pre>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>the same column, three statutes</span><b>only one of them cares</b></div>
+    <div class="pb">
+      <p>
+        Which columns are restricted is declared in a policy pack rather than written into the
+        checks, so the same graph and the same tags reach different verdicts depending only on
+        which law is named.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>regime</th><th>watches</th><th>verdict on public_coverage_flag</th></tr></thead>
+          <tbody>
+            <tr><td><code>employment_us</code></td><td>columns tagged protected_attribute</td><td class="n">nothing to report</td></tr>
+            <tr><td><code>ecoa</code></td><td>protected bases under fair lending</td><td class="n">nothing to report</td></tr>
+            <tr><td><code>eu_ai_act</code></td><td>protected attributes and personal data</td><td class="a">examine, Article 10(2)(f)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The first two are correct to stay quiet. Insurance coverage genuinely is not a protected
+        characteristic in US employment law. The EU AI Act asks for examination of bias affecting
+        fundamental rights rather than listing forbidden columns, so it catches it. The difference
+        between silence and a finding is a line of YAML, not a code change.
+      </p>
+    </div>
+  </div>
+
+  <div class="navbtns">
+    <button class="navbtn" data-go="prev">Back</button>
+    <button class="navbtn primary" data-go="next">File it back</button>
+    <span class="of">step 4 of 5</span>
+  </div>
+</section>
+
+<!-- ================= 05 WRITEBACK ================= -->
+<section class="scene" id="writeback" role="tabpanel">
+  <span class="label">step 05, where the finding goes</span>
+  <h2>A finding is worth nothing where nobody looks</h2>
+  <p>
+    A governance tool that prints to a terminal is a governance tool that gets run once. Every
+    finding is written back into DataHub as an incident on the table it concerns, so it sits
+    next to that table in the catalog the data team already opens. <b>Nothing is written without
+    an explicit flag</b>: the default is a dry run that prints exactly what it would file.
+  </p>
+
+  <div class="dpanel">
+    <div class="ph"><span>filed on analytics_marts.workforce_features</span><b class="fire">3 active</b></div>
+    <div class="pb" style="padding:0">
+      <div class="incs">
+        <div class="inc">
+          <span class="pri high">HIGH</span>
+          <span class="t">disability (With a disability) became easier to rebuild from workforce-classifier
+            <span class="u">urn:li:incident:107fdb6a-680d-45d7-a670-122736c40b50</span></span>
+        </div>
+        <div class="inc">
+          <span class="pri critical">CRITICAL</span>
+          <span class="t">age reaches workforce-classifier_3
+            <span class="u">urn:li:incident:ac291971-4ca5-41b1-9acb-0c58f9ed511a</span></span>
+        </div>
+        <div class="inc">
+          <span class="pri">LOW</span>
+          <span class="t">marital_status_code reaches workforce-classifier_3
+            <span class="u">urn:li:incident:305c0844-755e-4fdb-a782-8b9c653be4da</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>check it yourself</span><b class="ok">live catalog</b></div>
+    <div class="pb">
+      <p>
+        These are real entities in a running DataHub, not a rendering of them. Sign in with
+        <code>datahub</code> / <code>datahub</code>. If the incidents were not really there, these
+        pages would be empty.
+      </p>
+      <div class="ctas">
+        <a class="cta primary" href="https://datahub.onenept.com/dataset/urn%3Ali%3Adataset%3A(urn%3Ali%3AdataPlatform%3Adbt%2Cwarehouse.analytics_marts.workforce_features%2CPROD)/Incidents">The 3 incidents on workforce_features</a>
+        <a class="cta" href="https://datahub.onenept.com/dataset/urn%3Ali%3Adataset%3A(urn%3Ali%3AdataPlatform%3Adbt%2Cwarehouse.analytics_marts.income_features%2CPROD)/Incidents">The 6 on income_features</a>
+        <a class="cta" href="https://datahub.onenept.com/dataset/urn%3Ali%3Adataset%3A(urn%3Ali%3AdataPlatform%3Adbt%2Cwarehouse.analytics_marts.workforce_features%2CPROD)/Lineage">The lineage, in DataHub's own view</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>they come back on their own</span><b>without being asked</b></div>
+    <div class="pb">
+      <p>
+        Because the findings are real catalog entities rather than a report, a later lineage walk
+        picks them up without being told they exist. The block below arrived inside an ordinary
+        <code>get_lineage</code> response, which means an agent investigating something else
+        entirely finds the earlier finding on the way past.
+      </p>
+      <pre class="term"><code>"health": [
+  {
+    "type": "INCIDENTS",
+    "status": "FAIL",
+    "message": "3 active incidents",
+    "causes": ["ACTIVE_INCIDENTS"]
+  }
+]</code></pre>
+      <p style="margin-top:14px">
+        The original plan was to file on the model, which is where the consequence lives. DataHub
+        rejects an <code>mlModel</code> urn at the entity layer, so they are filed on the feature
+        table instead. That turned out to be the better home rather than a consolation, since the
+        feature table is where the column entered and where a fix is made.
+      </p>
+    </div>
+  </div>
+
+  <div class="nextup">
+    <h3>Next: the daily compliance document</h3>
+    <p>
+      The last step of the loop turns the night's findings into a dated document per jurisdiction,
+      built from the same policy packs rather than written by hand, so the record and the check
+      cannot drift apart. Three jurisdictions are in scope.
+    </p>
+    <p>
+      This step is <b>not built yet</b> and there is deliberately nothing here pretending to be it.
+      The two US packs and the EU pack already exist and drive the verdicts you saw in step 04.
+    </p>
+    <div class="jur">
+      <span>United States</span>
+      <span>Canada</span>
+      <span>European Union</span>
+    </div>
+  </div>
+
+  <div class="navbtns">
+    <button class="navbtn" data-go="prev">Back</button>
+    <a class="navbtn primary" href="/run" style="text-decoration:none">Read the unedited transcript</a>
+    <span class="of">step 5 of 5</span>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne/tree/master/examples">the raw output behind this page</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/state/exposure.json">state/exposure.json</a>
+    <a href="https://datahub.onenept.com">the live DataHub instance</a>
+    <a href="/run">the run, step by step</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var order = ["estate", "history", "rebuild", "trace", "writeback"];
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".stepbtn"));
+  var scenes = {};
+  order.forEach(function (id) { scenes[id] = document.getElementById(id); });
+
+  // the current step is held here rather than read back off the hash, so the
+  // buttons still step correctly on a first load with no hash at all
+  var cur = 0;
+
+  function show(id, moved) {
+    var at = order.indexOf(id);
+    if (at < 0) { at = 0; }
+    cur = at;
+
+    order.forEach(function (key, i) {
+      scenes[key].classList.toggle("on", i === at);
+      tabs[i].setAttribute("aria-selected", i === at ? "true" : "false");
+      tabs[i].classList.toggle("done", i < at);
+    });
+
+    if (location.hash !== "#" + order[at]) {
+      history.replaceState(null, "", "#" + order[at]);
+    }
+    // a step change is a new screen, so start it at the top
+    window.scrollTo({ top: 0, behavior: moved ? "smooth" : "auto" });
+  }
+
+  function step(by) {
+    show(order[Math.min(order.length - 1, Math.max(0, cur + by))], true);
+  }
+
+  tabs.forEach(function (btn) {
+    btn.addEventListener("click", function () { show(btn.dataset.step, true); });
+  });
+
+  document.querySelectorAll("[data-go]").forEach(function (btn) {
+    btn.addEventListener("click", function () { step(btn.dataset.go === "next" ? 1 : -1); });
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") { return; }
+    if (e.key === "ArrowRight") { step(1); }
+    if (e.key === "ArrowLeft") { step(-1); }
+  });
+
+  window.addEventListener("hashchange", function () {
+    if (order[cur] !== location.hash.slice(1)) { show(location.hash.slice(1), false); }
+  });
+
+  // deep links from the other pages arrive as /demo#trace and /demo#writeback
+  show(location.hash.slice(1), false);
+}());
+</script>
+
+</body>
+</html>

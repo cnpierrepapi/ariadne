@@ -16,11 +16,11 @@
   <a class="wordmark" href="/">ARIADNE</a>
   <nav>
     <a href="/">overview</a>
+    <a href="/demo">demo</a>
     <a href="/run">the run</a>
     <a href="/surfaces">surfaces</a>
     <a href="/agents">agents</a>
     <a href="/mcp" class="here">mcp</a>
-    <a href="/graph">graph</a>
     <a href="/register">register</a>
     <a href="https://github.com/cnpierrepapi/ariadne">source</a>
   </nav>
@@ -69,7 +69,7 @@ search workforce_features: 5 entities
     Three of those five are the same table. dbt holds the governance tags, postgres holds
     the physical table, mlflow holds the training frame, and they are siblings. Which one
     a walk starts from changes the answer, which is the first thing on
-    <a href="/graph">the graph page</a>.
+    <a href="/demo#trace">the column walk in the demo</a>.
   </p>
   <p class="note tight">Asking for something the transport does not have fails at the point of asking:</p>
   <pre class="term"><code><span class="cmd">python -c "from context import open_context; open_context('kit').call('add_tags', {})"</span>

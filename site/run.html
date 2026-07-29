@@ -16,11 +16,11 @@
   <a class="wordmark" href="/">ARIADNE</a>
   <nav>
     <a href="/">overview</a>
+    <a href="/demo">demo</a>
     <a href="/run" class="here">the run</a>
     <a href="/surfaces">surfaces</a>
     <a href="/agents">agents</a>
     <a href="/mcp">mcp</a>
-    <a href="/graph">graph</a>
     <a href="/register">register</a>
     <a href="https://github.com/cnpierrepapi/ariadne">source</a>
   </nav>
@@ -166,7 +166,7 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
       tag one hop back that the feature table never carried. Every edge here came out of
       a DataHub connector reading dbt, Postgres and MLflow.
     </p>
-    <a class="proof" href="/graph">the graph, and how it was ingested</a>
+    <a class="proof" href="/demo#trace">the same column walk, in the demo</a>
   </div>
 </section>
 
@@ -229,7 +229,7 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
       mlModel urn at the entity layer. The table is the better home anyway: it is where
       the column entered and where a fix goes.
     </p>
-    <a class="proof" href="/incidents">all nine incidents, read back from DataHub</a>
+    <a class="proof" href="/demo#writeback">all nine incidents, read back from DataHub</a>
   </div>
 </section>
 
@@ -382,13 +382,13 @@ warehouse.analytics_marts.workforce_features.public_coverage_flag
       <p>Blast radius before a change, root cause after one, over either transport.</p>
       <span class="metric">3 of 3 walks agree</span>
     </a>
-    <a class="card" href="/graph">
+    <a class="card" href="/demo#trace">
       <span class="label">context graph</span>
       <h3>Graph</h3>
-      <p>Lineage ingested by three connectors, policy packs, and column identification.</p>
+      <p>Lineage ingested by three connectors, policy packs, and where the column entered.</p>
       <span class="metric">7 hops, column level</span>
     </a>
-    <a class="card" href="/incidents">
+    <a class="card" href="/demo#writeback">
       <span class="label">incidents api</span>
       <h3>Incidents</h3>
       <p>Findings written back into DataHub and read out again through the front end.</p>
