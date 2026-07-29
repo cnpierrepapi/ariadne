@@ -75,3 +75,49 @@ restricted:
     note: >
       Not a special category, but a characteristic whose effect on fundamental
       rights Article 10 expects to be examined and documented.
+
+# Duties about the decision rather than about which columns are restricted.
+# See the same block in canada.yml for why these are declared and not compiled in.
+duties:
+
+  - name: Explanation of individual decision making
+    citation: Regulation (EU) 2024/1689, Article 86
+    applies_when: >
+      A decision is taken by a deployer on the basis of output from an Annex III
+      high risk system and produces legal effects or similarly significantly
+      affects the person.
+    requires:
+      - On request, give the affected person clear and meaningful explanations of
+        the role of the AI system in the decision procedure.
+      - Explain the main elements of the decision taken.
+    ariadne_supplies:
+      - The main elements at the level of the model, being the features it
+        consumed and where each came from.
+      - Provenance for every feature, so an explanation can be checked rather than
+        asserted.
+    not_supplied:
+      - Per person explanation. This document is about the model.
+      - Delivering the explanation on request.
+
+  - name: Record keeping and logs
+    citation: Regulation (EU) 2024/1689, Article 12; Article 19; Annex IV
+    applies_when: >
+      Throughout the lifetime of an Annex III high risk system.
+    requires:
+      - Automatically record events over the system's lifetime, to a degree
+        appropriate to its intended purpose.
+      - Enable identification of situations that may present a risk or lead to a
+        substantial modification.
+      - Retain the logs for an appropriate period, and be able to produce the
+        technical documentation of Annex IV.
+    ariadne_supplies:
+      - A dated, retained measurement record per model version, including the
+        measurements that found nothing.
+      - Detection of substantial modification in the sense that matters here, a
+        change in what the model can infer about a person.
+      - The lineage behind each finding, which is part of what Annex IV asks be
+        documented about data and data governance.
+    not_supplied:
+      - Inference time logging of individual uses of the system.
+      - The rest of the Annex IV file, most of which is about the system's design
+        and intended purpose rather than its data.

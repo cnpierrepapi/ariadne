@@ -68,3 +68,34 @@ restricted:
       sound credit scoring system, provided applicants aged 62 and over are not
       treated less favourably. So a finding on age is a question about whether the
       system meets that standard, not a fault on its own.
+
+# Duties about the decision rather than about which columns are restricted.
+# See the same block in canada.yml for why these are declared and not compiled in.
+duties:
+
+  - name: Adverse action notice, with specific reasons
+    citation: 15 USC 1691(d); 12 CFR 1002.9
+    applies_when: >
+      Credit is denied, or an existing account is revoked or its terms changed
+      unfavourably. Applies whether or not the decision was automated, which makes
+      it wider in reach than the Quebec automated decision duty and narrower in
+      what it asks for.
+    requires:
+      - Notify the applicant of the action taken within thirty days.
+      - State the SPECIFIC principal reasons for the adverse action, not merely
+        that a scoring system was used. A general reference to a model does not
+        satisfy this.
+      - Where a credit score was used, disclose the score, the range, and the key
+        factors that adversely affected it.
+      - State the applicant's right to a statement of reasons where one was not
+        provided.
+    ariadne_supplies:
+      - The features the deployed model actually consumed, so the reasons given
+        can be checked against what the model could in fact have used.
+      - Evidence that a prohibited basis is not reaching the model, or that it is,
+        which is the prior question to whether the stated reasons are the real ones.
+    not_supplied:
+      - The reasons for one applicant's denial. Per decision attribution is a
+        different computation from anything in this document.
+      - The score, range and factor disclosure, which come from the scoring system.
+      - Delivering the notice within thirty days.

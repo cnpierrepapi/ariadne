@@ -65,3 +65,41 @@ restricted:
     citation: >
       Not a federally protected class in employment, though many states protect it
       and it correlates with sex and with pregnancy.
+
+# Duties about the decision rather than about which columns are restricted.
+# See the same block in canada.yml for why these are declared and not compiled in.
+#
+# Worth stating plainly: US employment law has NO general federal analogue to the
+# Quebec automated decision transparency duty. There is no federal right to be told
+# that an employment decision was made by a model, nor to its principal factors.
+# What there is instead is a records and adverse impact obligation on the employer,
+# which is what appears below. Several states and cities have gone further, New York
+# City Local Law 144 among them, and none of that is modelled here.
+duties:
+
+  - name: Records, and determination of adverse impact
+    citation: >
+      41 CFR 60-3 (Uniform Guidelines on Employee Selection Procedures), 60-3.4 and
+      60-3.15; 29 CFR 1602
+    applies_when: >
+      A selection procedure is used as a basis for an employment decision. A model
+      that ranks or scores applicants is a selection procedure for this purpose.
+    requires:
+      - Maintain records of the impact the selection procedure has by race, sex and
+        ethnic group, sufficient to determine whether it has adverse impact.
+      - Where adverse impact is found, either validate the procedure or otherwise
+        justify its continued use.
+      - Retain documentation of any validity study relied upon, in the detail the
+        Guidelines specify.
+    ariadne_supplies:
+      - A dated record, per model version, of what the selection procedure's inputs
+        permit it to infer about the protected groups the Guidelines name.
+      - Detection of the case that is otherwise hardest to notice, where the
+        information enters through a column that carries no protected label.
+      - Provenance for each input, which is part of documenting what the procedure
+        actually consists of.
+    not_supplied:
+      - Impact ratios computed on actual selection outcomes. That needs the decisions
+        made, not the model's inputs, and is the measure the Guidelines specify.
+      - Any validity study.
+      - The four fifths rule determination itself.

@@ -139,3 +139,55 @@ restricted:
     basis: prohibited
     citation: RSC 1985 c. H-6, s. 3
     note: In scope through the national or ethnic origin ground.
+
+# DUTIES ABOUT THE DECISION, not about which columns are restricted.
+#
+# `restricted` above answers "may this attribute reach this model". A duty answers
+# "what does the operator owe the person the decision was made about". Neither
+# reduces to the other, and a compliance record that only carried the first would
+# be answering an easier question than the regulator asked.
+#
+# Kept declarative for the same reason as everything else here: complydoc.py reads
+# these and never names a statute itself.
+duties:
+
+  - name: Automated decision transparency
+    citation: >
+      Act respecting the protection of personal information in the private sector,
+      CQLR c. P-39.1, s. 12.1, as amended by Quebec Law 25
+    scope_note: >
+      PROVINCIAL, and independent of the Canadian Human Rights Act. It binds
+      private sector organisations carrying on an enterprise in Quebec regardless
+      of whether the activity is federally or provincially regulated for human
+      rights purposes. It is carried in this pack because an operator asking
+      "what do I owe Canada" needs both, not because it flows from the CHRA.
+    applies_when: >
+      The decision is based EXCLUSIVELY on automated processing of personal
+      information, meaning no meaningful human intervention before it is final.
+      A model that scores and a person who then decides is outside s. 12.1, and
+      that distinction is a fact about the deciding process rather than about the
+      model, so nothing in this document can settle it.
+    requires:
+      - Inform the person that the decision is based exclusively on automated
+        processing, no later than when the decision is communicated to them.
+      - On request, inform them of the personal information used to render it.
+      - On request, inform them of the reasons and of the principal factors and
+        parameters that led to the decision.
+      - On request, inform them of their right to have the personal information
+        used to render the decision corrected.
+      - Give them the opportunity to submit observations to a member of personnel
+        able to review the decision.
+    ariadne_supplies:
+      - The features the deployed model actually consumed, read from the model
+        registry rather than from documentation that may have drifted from it.
+      - Column level provenance for each feature back to the table and file it
+        entered at, including where it was renamed on the way.
+      - A dated record of what was measured on this model and what moved, which
+        evidences the "principal factors and parameters" limb at the level of the
+        model.
+    not_supplied:
+      - Delivering the notice to the person. That belongs to the deciding system.
+      - Reasons for one individual decision. Everything in this document is about
+        the model and its inputs, not about any one applicant.
+      - The channel for submitting observations and the human review behind it.
+      - Whether the decision was in fact exclusively automated.

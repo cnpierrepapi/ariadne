@@ -61,6 +61,7 @@
   <button class="stepbtn fires" role="tab" aria-selected="false" data-step="rebuild"><span class="n">03</span>the rebuild</button>
   <button class="stepbtn" role="tab" aria-selected="false" data-step="trace"><span class="n">04</span>where it came from</button>
   <button class="stepbtn" role="tab" aria-selected="false" data-step="writeback"><span class="n">05</span>writeback</button>
+  <button class="stepbtn" role="tab" aria-selected="false" data-step="document"><span class="n">06</span>the document</button>
 </div>
 
 <div class="stage">
@@ -124,7 +125,7 @@
   <div class="navbtns">
     <button class="navbtn" data-go="prev" disabled>Back</button>
     <button class="navbtn primary" data-go="next">See the daily runs</button>
-    <span class="of">step 1 of 5</span>
+    <span class="of">step 1 of 6</span>
   </div>
 </section>
 
@@ -197,7 +198,7 @@
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
     <button class="navbtn primary" data-go="next">Open the run that fired</button>
-    <span class="of">step 2 of 5</span>
+    <span class="of">step 2 of 6</span>
   </div>
 </section>
 
@@ -299,7 +300,7 @@
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
     <button class="navbtn primary" data-go="next">Find out why</button>
-    <span class="of">step 3 of 5</span>
+    <span class="of">step 3 of 6</span>
   </div>
 </section>
 
@@ -441,7 +442,7 @@
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
     <button class="navbtn primary" data-go="next">File it back</button>
-    <span class="of">step 4 of 5</span>
+    <span class="of">step 4 of 6</span>
   </div>
 </section>
 
@@ -554,30 +555,141 @@
     </div>
   </div>
 
-  <div class="nextup">
-    <h3>Next: the daily compliance document</h3>
-    <p>
-      The last step of the loop turns the night's findings into a dated document per jurisdiction,
-      built from the same policy packs rather than written by hand, so the record and the check
-      cannot drift apart. Three jurisdictions are in scope.
-    </p>
-    <p>
-      This step is <b>not built yet</b> and there is deliberately nothing here pretending to be it.
-      All four packs behind those three jurisdictions already exist and drive the verdicts you saw
-      in step 04. What is missing is the generator that turns a night's findings into a dated
-      document.
-    </p>
-    <div class="jur">
-      <span>United States</span>
-      <span>Canada</span>
-      <span>European Union</span>
+  <div class="navbtns">
+    <button class="navbtn" data-go="prev">Back</button>
+    <button class="navbtn primary" data-go="next">Produce the compliance record</button>
+    <span class="of">step 5 of 6</span>
+  </div>
+</section>
+
+<!-- ================= 06 THE DOCUMENT ================= -->
+<section class="scene" id="document" role="tabpanel">
+  <span class="label">step 06, what goes to the regulator</span>
+  <h2>The night's work, in a form somebody can file</h2>
+  <p>
+    The last step of the loop turns one night's assessment into a dated document per jurisdiction.
+    <b>It is not a rendering of the policy pack.</b> A pack says what a statute restricts, which is
+    the same on every day of the year and tells a regulator nothing about whether this operator did
+    anything. The document below is about <b>one run</b>: what the model was that day, what changed
+    since the last assessment, what was measured, what moved, what did not, and where the record
+    now lives.
+  </p>
+
+  <div class="dpanel">
+    <div class="ph"><span>generated for this run</span><b class="ok">3 jurisdictions</b></div>
+    <div class="pb">
+      <p>
+        Same model, same night, same engine. Only the named statute differs, and with it the
+        severity, the citations and which duties apply. Each is a real PDF produced by
+        <code>tools/complydoc.py</code> from the run you just walked through.
+      </p>
+      <div class="ctas">
+        <a class="cta primary" href="/docs/ariadne-workforce-classifier-canada.pdf">Canada, 5 pages</a>
+        <a class="cta" href="/docs/ariadne-workforce-classifier-employment_us.pdf">United States, 5 pages</a>
+        <a class="cta" href="/docs/ariadne-workforce-classifier-eu_ai_act.pdf">European Union, 5 pages</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>what is in it</span><b>ten sections</b></div>
+    <div class="pb" style="padding:0">
+      <div class="runs">
+        <div class="runrow"><span class="when">1 and 2</span><span class="what">The system assessed <em>version, feature table, training run, the features it actually consumed, read from the registry rather than from documentation</em></span><span class="acc"></span><span class="verdict"></span></div>
+        <div class="runrow"><span class="when">3</span><span class="what">Method <em>how the measurement works, and that the threshold is derived from observed variance rather than chosen</em></span><span class="acc"></span><span class="verdict"></span></div>
+        <div class="runrow fires"><span class="when">4</span><span class="what">Every measurement performed <em>all 16, including the 15 that found nothing</em></span><span class="acc"></span><span class="verdict">the point</span></div>
+        <div class="runrow"><span class="when">5</span><span class="what">Restricted attributes that could not be measured, and why <em>never dropped silently</em></span><span class="acc"></span><span class="verdict"></span></div>
+        <div class="runrow"><span class="when">6 and 7</span><span class="what">The finding, its statutory basis, the column's provenance hop by hop, and the catalog references it was filed under</span><span class="acc"></span><span class="verdict"></span></div>
+        <div class="runrow"><span class="when">8</span><span class="what">Duties concerning the decision <em>what this record supplies, and what it does not</em></span><span class="acc"></span><span class="verdict"></span></div>
+        <div class="runrow"><span class="when">9 and 10</span><span class="what">Scope, limitations, basis of preparation and a sign off block</span><span class="acc"></span><span class="verdict"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>section 4</span><b class="fire">the silence is the evidence</b></div>
+    <div class="pb">
+      <p>
+        Section 4 lists all sixteen measurements, not the one that fired. <b>A record showing only
+        what fired cannot be told apart from a record where the rest was never run</b>, and a
+        regulator asking whether an operator actually looked has no way to distinguish them. The
+        fifteen quiet rows are what evidences that the examination happened.
+      </p>
+      <p>
+        Section 5 does the same job from the other side. Three attributes the statute restricts
+        could not be measured at all, age because it is continuous and two more because the
+        warehouse declares no categories for them. They are named with the reason, because an
+        omitted attribute reads exactly like a clean one.
+      </p>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>section 8</span><b>duties are not a column list</b></div>
+    <div class="pb">
+      <p>
+        Everything up to section 7 answers "may this attribute reach this model". Section 8 answers
+        a different question: <b>what does the operator owe the person the decision was made
+        about</b>. Quebec's Law 25 requires that they be told the decision was automated, given the
+        principal factors, and offered a human to argue with. None of that is expressible as a list
+        of forbidden columns, so it gets its own section, declared in the pack like everything else.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>jurisdiction</th><th>duty</th><th>requires</th><th>we supply</th><th>we do not</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>canada</code></td>
+              <td>Automated decision transparency, Law 25 s. 12.1</td>
+              <td class="v">5</td><td class="v">3</td><td class="a">4</td>
+            </tr>
+            <tr>
+              <td><code>employment_us</code></td>
+              <td>Records and adverse impact, 41 CFR 60-3</td>
+              <td class="v">3</td><td class="v">3</td><td class="a">3</td>
+            </tr>
+            <tr>
+              <td><code>eu_ai_act</code></td>
+              <td>Article 86 explanation, and Article 12 logs</td>
+              <td class="v">5</td><td class="v">5</td><td class="a">4</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <b>The last column is the one that matters.</b> Every duty has a limb this cannot reach:
+        delivering the notice, explaining one individual decision, running the human review channel.
+        A compliance document that quietly implied otherwise would be worse than one that says so,
+        so each is listed by name under "NOT supplied by this assessment".
+      </p>
+      <p>
+        US employment law is worth reading for what is absent. There is <b>no federal analogue</b>
+        to the Quebec duty: no right to be told an employment decision was made by a model, and no
+        right to its principal factors. What exists instead is a records and adverse impact
+        obligation on the employer, and that is what the US document carries.
+      </p>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>honest about this page</span><b>what is not automated yet</b></div>
+    <div class="pb">
+      <p>
+        The three documents above were generated by the tool from the recorded run, and the figures
+        in them match the ones in steps 03 to 05 because both read the same history file. What is
+        not yet wired is the nightly schedule that would produce them unattended and deliver them.
+        Today it is a command, and the command is in the repository.
+      </p>
+      <pre class="term"><code><span class="cmd">python tools/complydoc.py --model workforce-classifier --policy canada \
+    --operator "Northwind Financial Group"</span>
+ariadne-workforce-classifier-canada.pdf  15,033 bytes  reference 930F3D073409</code></pre>
     </div>
   </div>
 
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
     <a class="navbtn primary" href="/surfaces" style="text-decoration:none">Every DataHub surface this used</a>
-    <span class="of">step 5 of 5</span>
+    <span class="of">step 6 of 6</span>
   </div>
 </section>
 
@@ -598,7 +710,7 @@
 
 <script>
 (function () {
-  var order = ["estate", "history", "rebuild", "trace", "writeback"];
+  var order = ["estate", "history", "rebuild", "trace", "writeback", "document"];
   var tabs = Array.prototype.slice.call(document.querySelectorAll(".stepbtn"));
   var scenes = {};
   order.forEach(function (id) { scenes[id] = document.getElementById(id); });

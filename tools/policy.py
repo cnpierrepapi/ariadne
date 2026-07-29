@@ -96,6 +96,14 @@ class Policy:
         self.protected_tags: tuple[str, ...] = tuple(
             self.spec.get("protected_tags") or ["protected_attribute"])
 
+        # Duties are obligations about the DECISION rather than about which
+        # columns may reach the model: tell the person, give the principal
+        # factors, offer human review. They do not reduce to restricted
+        # attributes and restricted attributes do not reduce to them, so they
+        # are carried separately and read straight through to the compliance
+        # document. A regime with none declared has none, not an empty one.
+        self.duties: list[dict] = list(self.spec.get("duties") or [])
+
         self.restricted: dict[str, dict] = {}
         for entry in self.spec.get("restricted") or []:
             name = entry.get("attribute")
@@ -178,6 +186,15 @@ def _show(policy: Policy) -> None:
               f"{spec.get('column', ''):22}{testable}")
         if spec.get("citation"):
             print(f"    {'':12} {spec['citation']}")
+
+    if policy.duties:
+        print(f"\n  duties about the decision, {len(policy.duties)}:")
+        for duty in policy.duties:
+            print(f"    {duty.get('name', '')}")
+            print(f"      {' '.join((duty.get('citation') or '').split())}")
+            print(f"      requires {len(duty.get('requires') or [])}, "
+                  f"we supply {len(duty.get('ariadne_supplies') or [])}, "
+                  f"we do not supply {len(duty.get('not_supplied') or [])}")
 
     skipped = policy.untestable()
     if skipped:
