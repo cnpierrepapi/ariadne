@@ -1,41 +1,35 @@
-== 6 finding(s) for income-classifier under Equal Credit Opportunity Act, Regulation B ==
+== workforce_features, 6 active ==
 
-  [filing] HIGH     age reaches income-classifier_3
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
-      restricted attribute reaches a deployed model
-      raised urn:li:incident:72e63691-b385-42d6-a5ec-a362817b74ce
-  [filing] CRITICAL marital_status_code reaches income-classifier_3
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
-      restricted attribute reaches a deployed model
-      raised urn:li:incident:b30769e0-e0ed-4213-9519-42dc6f9ada90
-  [filing] CRITICAL race_code reaches income-classifier_3
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
-      restricted attribute reaches a deployed model
-      raised urn:li:incident:c30d4c1e-f8ec-440d-84f3-5fe6b4e8f49b
-  [filing] HIGH     race (Black alone) became easier to rebuild from income-classifier
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
-      reconstructability of a protected attribute moved
-      raised urn:li:incident:da27c432-5c10-4a83-9d58-45e2e744075a
-  [filing] HIGH     race (Asian alone) became easier to rebuild from income-classifier
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
-      reconstructability of a protected attribute moved
-      raised urn:li:incident:2aefd35d-8936-4948-ab11-6057525d40f9
-  [filing] HIGH     race (Some other race) became easier to rebuild from income-classifier
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.income_features,PROD)
-      reconstructability of a protected attribute moved
-      raised urn:li:incident:984e6e23-e388-45ec-ba47-1204946c0fd4
+  under Canadian Human Rights Act, 3
+    CRITICAL | age reaches workforce-classifier_3
+    HIGH     | disability (With a disability) became easier to rebuild from workforce-classifier
+    CRITICAL | marital_status_code reaches workforce-classifier_3
 
-== 3 finding(s) for workforce-classifier under Title VII of the Civil Rights Act, the ADA, and the ADEA ==
+  under Employment US, 3
+    CRITICAL | age reaches workforce-classifier_3
+    HIGH     | disability (With a disability) became easier to rebuild from workforce-classifier
+    LOW      | marital_status_code reaches workforce-classifier_3
 
-  [filing] CRITICAL age reaches workforce-classifier_3
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
-      restricted attribute reaches a deployed model
-      raised urn:li:incident:ac291971-4ca5-41b1-9acb-0c58f9ed511a
-  [filing] LOW      marital_status_code reaches workforce-classifier_3
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
-      restricted attribute reaches a deployed model
-      raised urn:li:incident:305c0844-755e-4fdb-a782-8b9c653be4da
-  [filing] HIGH     disability (With a disability) became easier to rebuild from workforce-classifier
-      on urn:li:dataset:(urn:li:dataPlatform:dbt,warehouse.analytics_marts.workforce_features,PROD)
-      reconstructability of a protected attribute moved
-      raised urn:li:incident:107fdb6a-680d-45d7-a670-122736c40b50
+== income_features, 12 active ==
+
+  under Canadian Human Rights Act, 6
+    CRITICAL | age reaches income-classifier_3
+    CRITICAL | marital_status_code reaches income-classifier_3
+    HIGH     | race (Asian alone) became easier to rebuild from income-classifier
+    HIGH     | race (Black alone) became easier to rebuild from income-classifier
+    HIGH     | race (Some other race) became easier to rebuild from income-classifier
+    CRITICAL | race_code reaches income-classifier_3
+
+  under ECOA, 6
+    HIGH     | age reaches income-classifier_3
+    CRITICAL | marital_status_code reaches income-classifier_3
+    HIGH     | race (Asian alone) became easier to rebuild from income-classifier
+    HIGH     | race (Black alone) became easier to rebuild from income-classifier
+    HIGH     | race (Some other race) became easier to rebuild from income-classifier
+    CRITICAL | race_code reaches income-classifier_3
+
+The same fact appears once per regime, at the severity that regime assigns.
+marital_status_code reaching workforce-classifier_3 is LOW under US
+employment law, which does not enumerate marital status, and CRITICAL under
+the Canadian Human Rights Act, which does. One graph, one engine, two
+obligations, and both are now in the catalog where a team would find them.

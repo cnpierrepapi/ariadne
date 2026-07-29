@@ -180,16 +180,32 @@ def delta_findings(model_name: str) -> tuple[list[dict], dict, dict]:
     return findings, context, current
 
 
-def _title(f: dict) -> str:
+def _title(f: dict, pack) -> str:
+    """The title, which is also the deduplication key, so it must name the regime.
+
+    A column reaching a model is one fact about the graph, but it is a different
+    obligation under each statute, at a different severity, with a different
+    citation. `age` is prohibited under the Canadian Human Rights Act and merely
+    conditional under ECOA. Filing one incident for both would mean whichever
+    regime was checked first silently decided the severity for a jurisdiction
+    nobody had looked at yet.
+
+    So the regime belongs in the title. Without it the second regime to run
+    deduplicates against the first and reports `already open` while having filed
+    nothing, which is the exact shape of failure this project keeps hitting: a
+    check that looks like it worked.
+    """
     if f["kind"] == "tag":
-        return f"{f['column']} reaches {f['model']}"
-    # the group belongs in the title. Each group is measured against the reference
-    # group separately, the way adverse impact analysis compares, so one attribute
-    # can produce several findings at once. Without the group they share a title,
-    # and deduplication then drops all but the first, which loses real findings
-    # while looking like it worked.
-    return (f"{f['attribute']} ({f['group']}) became easier to rebuild from "
-            f"{f['model']}")
+        base = f"{f['column']} reaches {f['model']}"
+    else:
+        # the group belongs in the title. Each group is measured against the
+        # reference group separately, the way adverse impact analysis compares, so
+        # one attribute can produce several findings at once. Without the group
+        # they share a title, and deduplication then drops all but the first,
+        # which loses real findings while looking like it worked.
+        base = (f"{f['attribute']} ({f['group']}) became easier to rebuild from "
+                f"{f['model']}")
+    return f"{base} under {pack.name}"
 
 
 def _body_tag(f: dict, pack) -> str:
@@ -265,7 +281,7 @@ def to_incident(f: dict, pack, context: dict, resource_urn: str) -> dict:
     return {
         "type": "CUSTOM",
         "customType": CUSTOM_TYPE[f["kind"]],
-        "title": _title(f),
+        "title": _title(f, pack),
         "description": _body_tag(f, pack) if tag_kind else _body_delta(f, context),
         "resourceUrn": resource_urn,
         "priority": PRIORITY.get(f["basis"], "MEDIUM") if tag_kind else "HIGH",
@@ -298,7 +314,7 @@ def main() -> int:
     for f in everything:
         resource = resource_for(f["table"]) if f.get("table") else None
         if not resource:
-            print(f"  skipped {_title(f)}: no entity for {f.get('table')}")
+            print(f"  skipped {_title(f, pack)}: no entity for {f.get('table')}")
             continue
         planned.append(to_incident(f, pack, context, resource))
 

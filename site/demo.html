@@ -457,25 +457,58 @@
   </p>
 
   <div class="dpanel">
-    <div class="ph"><span>filed on analytics_marts.workforce_features</span><b class="fire">3 active</b></div>
+    <div class="ph"><span>filed on analytics_marts.workforce_features</span><b class="fire">6 active, two regimes</b></div>
     <div class="pb" style="padding:0">
       <div class="incs">
         <div class="inc">
-          <span class="pri high">HIGH</span>
-          <span class="t">disability (With a disability) became easier to rebuild from workforce-classifier
-            <span class="u">urn:li:incident:107fdb6a-680d-45d7-a670-122736c40b50</span></span>
+          <span class="pri critical">CRITICAL</span>
+          <span class="t">age reaches workforce-classifier_3 <b>under Canadian Human Rights Act</b>
+            <span class="u">urn:li:incident:f42faf68-a926-41ff-a871-a90083559ac7</span></span>
         </div>
         <div class="inc">
           <span class="pri critical">CRITICAL</span>
-          <span class="t">age reaches workforce-classifier_3
+          <span class="t">marital_status_code reaches workforce-classifier_3 <b>under Canadian Human Rights Act</b>
+            <span class="u">urn:li:incident:f7e1996f-9e8c-4782-aba1-e020493914de</span></span>
+        </div>
+        <div class="inc">
+          <span class="pri high">HIGH</span>
+          <span class="t">disability (With a disability) became easier to rebuild from workforce-classifier <b>under Canadian Human Rights Act</b>
+            <span class="u">urn:li:incident:63c0b78a-b45d-4dc0-9f15-c6437e203be0</span></span>
+        </div>
+        <div class="inc">
+          <span class="pri critical">CRITICAL</span>
+          <span class="t">age reaches workforce-classifier_3 <b>under Employment US</b>
             <span class="u">urn:li:incident:ac291971-4ca5-41b1-9acb-0c58f9ed511a</span></span>
         </div>
         <div class="inc">
           <span class="pri">LOW</span>
-          <span class="t">marital_status_code reaches workforce-classifier_3
+          <span class="t">marital_status_code reaches workforce-classifier_3 <b>under Employment US</b>
             <span class="u">urn:li:incident:305c0844-755e-4fdb-a782-8b9c653be4da</span></span>
         </div>
+        <div class="inc">
+          <span class="pri high">HIGH</span>
+          <span class="t">disability (With a disability) became easier to rebuild from workforce-classifier <b>under Employment US</b>
+            <span class="u">urn:li:incident:107fdb6a-680d-45d7-a670-122736c40b50</span></span>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <div class="dpanel">
+    <div class="ph"><span>the same fact, twice</span><b class="fire">CRITICAL in Canada, LOW in the US</b></div>
+    <div class="pb">
+      <p>
+        <code>marital_status_code reaches workforce-classifier_3</code> is one fact about the
+        graph, and it is filed twice because it is two obligations. Section 3 of the Canadian
+        Human Rights Act enumerates marital status, so it is CRITICAL. US employment law does not,
+        so it is LOW and stays a matter for documentation.
+      </p>
+      <p>
+        <b>The regime has to be part of the title, and finding that out was not free.</b> Without
+        it the two findings share a title, the second regime to run deduplicates against the
+        first, and the tool prints "already open" having filed nothing. A jurisdiction nobody had
+        checked would inherit a severity set by one nobody had asked about.
+      </p>
     </div>
   </div>
 
@@ -508,7 +541,7 @@
   {
     "type": "INCIDENTS",
     "status": "FAIL",
-    "message": "3 active incidents",
+    "message": "6 active incidents",
     "causes": ["ACTIVE_INCIDENTS"]
   }
 ]</code></pre>
