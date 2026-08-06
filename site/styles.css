@@ -1207,3 +1207,8 @@ footer {
   max-height: 340px; overflow: auto;
 }
 .lr-out.bad { color: #ffb4ac; border-color: rgba(255,90,77,.35); }
+
+
+/* The mark sits with the wordmark in the header and the footer. */
+.wordmark { display: inline-flex; align-items: center; gap: 10px; }
+.wordmark img { display: block; flex: none; }

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220">
+  <!-- Favicon variant: dark plate and a heavier stroke, because the gradient
+       and the hairlines disappear at 16px. -->
+  <rect width="220" height="220" rx="34" fill="#06070a"/>
+  <path d="M30 194 L30 30 L190 30 L190 146 L82 146 L82 82 L146 82 L146 110 L110 110"
+        fill="none" stroke="#8fb0ff" stroke-width="18"
+        stroke-linecap="square" stroke-linejoin="miter"/>
+  <circle cx="110" cy="110" r="17" fill="#ff5a4d"/>
+</svg>
