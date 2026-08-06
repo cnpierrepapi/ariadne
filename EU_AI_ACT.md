@@ -14,16 +14,39 @@ amendment proposals, and the obligations that bind you depend on your role,
 provider or deployer, and on your system's classification. This is engineering
 documentation, not legal advice, and no part of it substitutes for counsel.
 
-## Why this matters now
+## When this binds
 
-High risk obligations under Annex III attach on **2 August 2026**. The Regulation
-entered into force in August 2024, prohibited practices bound from February 2025,
-and general purpose model obligations from August 2025.
+The high risk timeline moved, and this section says so rather than quietly keeping
+the old date. An earlier version of this page said obligations attached on 2 August
+2026, and warned in the next paragraph that delay proposals were under discussion
+and that the operative date is the one in force rather than the one first published.
+That caveat fired.
 
-Confirm the current date for your own classification before planning around it.
-Amendment proposals to stagger or delay parts of the high risk regime were under
-discussion, and the operative date is the one in force, not the one first
-published.
+| Milestone | Date |
+| --- | --- |
+| Regulation entered into force | August 2024 |
+| Prohibited practices bound | February 2025 |
+| General purpose model obligations | August 2025 |
+| **Article 50 transparency duties** | **2 August 2026, in force** |
+| **Standalone Annex III high risk** | **2 December 2027**, moved from 2 August 2026 |
+| Annex I product embedded high risk | 2 August 2028, moved from 2 August 2027 |
+
+The Digital Omnibus on AI, approved by the Council on 29 June 2026, deferred
+standalone Annex III systems by sixteen months and product embedded systems by
+twelve. Articles 9 to 17, which is where the data governance and technical
+documentation duties live, move with them.
+
+So the honest position for this repository: **the EU pack describes an obligation
+that is coming, not one that binds today.** What it asks for did not change, only
+when. Operators now have until December 2027 to be able to produce it, which is
+roughly the time it takes to get lineage into a state where producing it is
+possible at all.
+
+The other three packs are different. ECOA, Title VII with ADEA and ADA, and the
+Canadian Human Rights Act are all in force today and were untouched by any of this.
+If you want a regime in this repository that binds right now, use one of those.
+
+Confirm the current position for your own classification before planning around it.
 
 ## Whether this applies to you
 

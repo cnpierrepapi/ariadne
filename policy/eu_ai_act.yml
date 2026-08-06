@@ -12,8 +12,15 @@
 # line of code changing.
 #
 # Verify against current text before relying on any citation below. Article numbers
-# reflect the Regulation as published. The compliance timeline has been subject to
-# amendment proposals, so confirm what is in force for your classification.
+# reflect the Regulation as published and are unchanged.
+#
+# TIMING, AND IT MOVED. The Digital Omnibus on AI, approved by the Council on
+# 29 June 2026, deferred standalone Annex III high risk obligations to 2 December
+# 2027, and Annex I product embedded ones to 2 August 2028. Articles 9 to 17 move
+# with them. The Article 50 transparency duties did take effect on 2 August 2026.
+# So this pack describes an obligation that is coming rather than one that binds
+# today. What it asks for did not change, only when. The ecoa, employment_us and
+# canada packs cite law that is in force now.
 
 name: EU AI Act
 long_name: Regulation (EU) 2024/1689, Annex III high risk systems

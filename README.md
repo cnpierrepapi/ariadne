@@ -21,10 +21,16 @@ and answers the questions that only the graph can answer:
   naming every measurement including the ones that found nothing, because a report
   showing only what fired cannot be told apart from one where the rest never ran.
 
-> **High risk obligations under the EU AI Act attach on 2 August 2026.** Article 10
-> requires examination for bias, Article 9 requires it continuously rather than
-> once, and Annex IV requires documented data provenance. Ariadne produces all
-> three from the catalog rather than from a written annex that drifts.
+> **The EU AI Act's high risk obligations were deferred to 2 December 2027.** The Digital
+> Omnibus on AI, approved by the Council on 29 June 2026, moved standalone Annex III
+> systems back by sixteen months from the original 2 August 2026, and product embedded
+> systems under Annex I to 2 August 2028. The Article 50 transparency duties did take
+> effect on 2 August 2026.
+>
+> What Articles 9, 10 and Annex IV ask for has not changed, only when it binds:
+> examination for bias, repeated rather than done once, and documented data provenance.
+> Ariadne produces all three from the catalog rather than from a written annex that
+> drifts. The other three packs in this repository cite law that is in force today.
 > **[How Ariadne maps to the Act, article by article](EU_AI_ACT.md)**
 
 **[ariadne-five.vercel.app](https://ariadne-five.vercel.app)** walks the whole thing
