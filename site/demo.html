@@ -24,8 +24,8 @@
 </header>
 
 <div class="replay">
-  <b>recorded run</b>
-  <span>Every number and every line of output below was produced on a live instance on 27 and 28 July 2026 and is committed in <code>examples/</code>. Nothing here is generated on page load. The DataHub links are live, so the findings can be checked against the catalog itself.</span>
+  <b>recorded, and re-runnable</b>
+  <span>The transcript in each step was produced on a live instance on 27 and 28 July 2026 and is committed in <code>examples/</code>. Every step also carries a <b>Run it now</b> button that calls that same instance through <code>api.onenept.com</code>, so you can check the transcript against the machine rather than taking it on trust. Where a step concerns something written into the catalog, it links to the entity in DataHub.</span>
 </div>
 
 <dl class="chrome">
@@ -118,6 +118,8 @@
     </div>
   </div>
 
+  <div class="liverun" data-run="estate"></div>
+
   <div class="navbtns">
     <button class="navbtn" data-go="prev" disabled>Back</button>
     <button class="navbtn primary" data-go="next">See the daily runs</button>
@@ -190,6 +192,8 @@
       </p>
     </div>
   </div>
+
+  <div class="liverun" data-run="history"></div>
 
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
@@ -292,6 +296,8 @@
     <span class="hit">disability (With a disability against Without a disability)  0.7489 to 0.7883  +0.0394, 12x the noise</span></code></pre>
     </div>
   </div>
+
+  <div class="liverun" data-run="rebuild"></div>
 
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
@@ -435,6 +441,8 @@
     </div>
   </div>
 
+  <div class="liverun" data-run="trace"></div>
+
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
     <button class="navbtn primary" data-go="next">File it back</button>
@@ -550,6 +558,8 @@
       </p>
     </div>
   </div>
+
+  <div class="liverun" data-run="writeback"></div>
 
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
@@ -682,6 +692,8 @@ ariadne-workforce-classifier-canada.pdf  15,033 bytes  reference 930F3D073409</c
     </div>
   </div>
 
+  <div class="liverun" data-run="document"></div>
+
   <div class="navbtns">
     <button class="navbtn" data-go="prev">Back</button>
     <a class="navbtn primary" href="/surfaces" style="text-decoration:none">Every DataHub surface this used</a>
@@ -760,5 +772,6 @@ ariadne-workforce-classifier-canada.pdf  15,033 bytes  reference 930F3D073409</c
 }());
 </script>
 
+<script src="/demo-live.js"></script>
 </body>
 </html>
