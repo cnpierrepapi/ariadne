@@ -964,3 +964,193 @@ footer {
   .inc .pri { justify-self: start; padding: 3px 10px; }
   .stage { padding-left: var(--gutter); padding-right: var(--gutter); }
 }
+
+
+/* ============================================================
+   Hero built around the product rather than around the type.
+   The catalog screenshot is the object; everything else is caption.
+   Sized against the viewport so it never scrolls at any display size.
+   ============================================================ */
+/* ============================================================
+   Hero built around the product, not around the type.
+   The catalog screenshot is the object. Everything else is caption.
+   ============================================================ */
+/* The whole hero has to sit inside one screen at any size, so it is measured
+   against the viewport rather than against its own content. svh, not vh, or
+   mobile browser chrome pushes the strip off the bottom. */
+.shot-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  padding: clamp(20px, 3vh, 44px) 0 0;
+  min-height: calc(100svh - 116px);
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(120% 90% at 78% 8%, rgba(47,107,255,.30), transparent 58%),
+    radial-gradient(80% 70% at 8% 96%, rgba(255,90,77,.14), transparent 62%),
+    var(--ink);
+}
+
+.shot-hero .in {
+  width: 100%;
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(20px, 3.4vw, 54px);
+  align-items: center;
+}
+
+/* ---- left, the caption ---- */
+.shot-hero h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(32px, 3.9vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 8px 0 0;
+  max-width: 15ch;
+}
+.shot-hero h1 em {
+  font-style: italic;
+  background: linear-gradient(96deg, #7ea6ff, #ff8f84);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.shot-hero .says {
+  font-size: clamp(15px, 1.2vw, 17.5px);
+  line-height: 1.45;
+  font-weight: 500;
+  margin: 15px 0 0;
+  max-width: 36ch;
+  color: var(--paper);
+}
+.shot-hero .sub {
+  color: var(--muted);
+  max-width: 40ch;
+  margin: 11px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---- right, the product ---- */
+.frame {
+  position: relative;
+  margin-bottom: -1px;
+  border-radius: 12px 12px 0 0;
+  border: 1px solid var(--line-2);
+  border-bottom: none;
+  background: #fff;
+  box-shadow: 0 -2px 90px rgba(47,107,255,.28), 0 40px 90px rgba(0,0,0,.6);
+  overflow: hidden;
+}
+.frame .bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px;
+  background: #12151c;
+  border-bottom: 1px solid #222836;
+}
+.frame .bar i { width: 9px; height: 9px; border-radius: 50%; background: #333c4e; display: block; }
+.frame .bar span {
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted-2);
+  letter-spacing: .08em; margin-left: 8px;
+}
+/* Cap the image against the viewport as well as the column, so a short screen
+   crops the list from the bottom instead of pushing the strip out of view. */
+.frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100svh - 330px);
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* annotations laid over the real screenshot */
+.pin {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .04em;
+  color: #fff;
+  background: rgba(214,48,36,.96);
+  padding: 5px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0,0,0,.4);
+}
+.pin::after {
+  content: "";
+  position: absolute;
+  left: -26px; top: 50%;
+  width: 26px; height: 1px;
+  background: rgba(214,48,36,.96);
+}
+.pin.a { top: 35%; left: 46%; }
+.pin.b { top: 71.5%; left: 46%; }
+
+/* The reading of the screenshot lives beside it, so the screenshot itself
+   stays unobstructed and can be checked against the live instance. */
+.verdict {
+  margin: 26px 0 0;
+  border-left: 2px solid var(--alarm);
+  padding: 2px 0 2px 14px;
+  max-width: 38ch;
+}
+.verdict b {
+  display: block; font-family: var(--mono); font-size: 11px;
+  color: #ff9b91; letter-spacing: .05em; margin-bottom: 4px;
+}
+.verdict span { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+
+/* ---- live strip ---- */
+/* One line, always. If this wraps it steals the height the hero is counting on. */
+.strip { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--ink-2); }
+.strip .in {
+  max-width: 1520px; margin: 0 auto; padding: 13px var(--gutter);
+  display: flex; flex-wrap: nowrap; overflow-x: auto; align-items: baseline;
+  gap: clamp(14px, 2.3vw, 34px); scrollbar-width: none;
+}
+.strip .in::-webkit-scrollbar { display: none; }
+.strip .f { display: flex; align-items: baseline; gap: 7px; white-space: nowrap; }
+.strip .f b { font-family: var(--mono); font-size: 17px; font-weight: 600; color: var(--paper); }
+.strip .f b.is-live { color: #7ea6ff; }
+.strip .f span {
+  font-family: var(--mono); font-size: 10px; color: var(--muted-2);
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.strip .state {
+  margin-left: auto; font-family: var(--mono); font-size: 10px;
+  letter-spacing: .09em; color: var(--muted-2); display: flex; align-items: center;
+  gap: 7px; white-space: nowrap; padding-left: 12px;
+}
+.strip .state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); }
+.strip .state.live { color: var(--pos); }
+.strip .state.live::before { background: var(--pos); box-shadow: 0 0 8px var(--pos); }
+
+@media (max-width: 1000px) {
+  /* The nav wraps at this width, so the fixed subtraction no longer holds.
+     Let the hero size to its content and keep the content small instead. */
+  .shot-hero { min-height: 0; padding: 14px 0 16px; }
+  .shot-hero .in { grid-template-columns: 1fr; gap: 16px; align-content: center; }
+  .shot-hero h1 { margin-top: 6px; }
+  .shot-hero .says { margin-top: 11px; }
+  /* Stacked, the screenshot cannot carry its own detail, so it becomes a
+     glimpse of the real thing rather than something to read. */
+  .frame img { max-height: 26svh; }
+  .pin { display: none; }
+  .verdict { display: none; }
+  .shot-hero .sub { display: none; }
+}
+
+@media (max-width: 560px) {
+  .shot-hero h1 { font-size: 30px; }
+  .shot-hero .says { font-size: 14.5px; margin-top: 9px; }
+  .shot-hero .ctas { margin-top: 14px !important; }
+  .frame img { max-height: 20svh; }
+  .strip .in { padding: 10px var(--gutter); }
+  .strip .f b { font-size: 15px; }
+}

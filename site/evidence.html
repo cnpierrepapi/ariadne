@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne, the evidence</title>
+<meta name="description" content="What Ariadne measured on a live instance: what a deployed model can rebuild about the people it scores, the proxy hypotheses written down before measurement, and the same warehouse judged under four statutes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">overview</a>
+    <a href="/demo">demo</a>
+    <a href="/datahub">datahub</a>
+    <a href="/evidence" class="here">evidence</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="block" style="max-width:none">
+  <span class="label">measured, not asserted</span>
+  <h2 style="font-size:clamp(26px,3.6vw,44px);max-width:24ch">Removing a column is only a control if what remains cannot rebuild it</h2>
+  <p class="lede" style="max-width:72ch">
+    <code>income_features</code> was written deliberately without the protected attributes the
+    canonical benchmark ships with. That is the intent. The question this page answers is
+    whether the intent survived contact with the rest of the table.
+  </p>
+  <p class="lede" style="max-width:72ch">
+    Ariadne fits a model to predict each attribute from the features the classifier actually
+    uses. A high score does not mean anything is unlawful. It means the column you removed is
+    still in the room.
+  </p>
+</section>
+
+<!-- ============ THE RECONSTRUCTION TABLE ============ -->
+<section class="block" style="max-width:none">
+  <span class="label">income-classifier v3, 12 features, measured on the live instance</span>
+  <h2 style="font-size:clamp(24px,3.2vw,38px)">What the deployed model can still rebuild</h2>
+  <div class="table-scroll">
+    <table style="min-width:640px">
+      <thead><tr><th>attribute</th><th>group compared</th><th>auc</th><th>rows</th></tr></thead>
+      <tbody>
+        <tr><td>marital_status</td><td>Never married v Married</td><td><b>0.9085</b></td><td>171,747</td></tr>
+        <tr><td>citizenship</td><td>Not a citizen v Born in the US</td><td><b>0.8949</b></td><td>158,940</td></tr>
+        <tr><td>citizenship</td><td>Naturalised v Born in the US</td><td><b>0.8686</b></td><td>167,115</td></tr>
+        <tr><td>nativity</td><td>Foreign born v Native born</td><td><b>0.8672</b></td><td>196,604</td></tr>
+        <tr><td>race</td><td>Asian alone v White alone</td><td><b>0.8295</b></td><td>154,425</td></tr>
+        <tr><td>race</td><td>Black alone v White alone</td><td><b>0.8174</b></td><td>130,210</td></tr>
+        <tr><td>sex</td><td>Female v Male</td><td><b>0.8125</b></td><td>196,604</td></tr>
+        <tr><td>race</td><td>American Indian alone v White alone</td><td>0.7379</td><td>122,913</td></tr>
+        <tr><td>race</td><td>Two or more races v White alone</td><td>0.6669</td><td>129,888</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="max-width:72ch;margin-top:22px">
+    Fifteen measurements across five attributes, and the ones that found less are kept rather
+    than dropped. A report showing only what fired cannot be told apart from one where the rest
+    never ran.
+  </p>
+
+  <ul class="split">
+    <li>
+      <b>Sell the change, not the level</b>
+      Whether 0.81 is acceptable is arguable forever, and it is a question about society rather
+      than about this model. A move in the week somebody edited a dbt model is not.
+    </li>
+    <li>
+      <b>It does not decide legality</b>
+      Correlation with a protected attribute is not prohibited and cannot be. The law asks about
+      harm, business necessity and less harmful alternatives. Those are human calls, and this
+      supplies one input to them.
+    </li>
+  </ul>
+</section>
+
+<!-- ============ THE REGISTER ============ -->
+<section class="row-2 flip">
+  <div class="copy">
+    <span class="accent"></span>
+    <span class="label">hypotheses written down before measuring</span>
+    <h2>Most of them were wrong, and they stay in the register</h2>
+    <p>
+      Five proxy hypotheses were declared in a file before any of them were measured, so the
+      ones that failed cannot be quietly deleted afterwards.
+    </p>
+    <p>
+      Four moved the number by more than the threshold the exposure check fires on. One did
+      not, and it stays in the register marked refuted rather than being removed. That is what
+      makes the four that fired mean anything.
+    </p>
+    <div class="ctas">
+      <a class="cta" href="/register">The full register, and how it was built</a>
+    </div>
+  </div>
+  <div class="show">
+    <pre class="term"><code><span class="cmd">python tools/screen.py</span>
+  244328 rows, 5 baseline features from workforce-classifier v3
+  baseline rebuilds disability at 0.7337 before any candidate
+
+  candidate                       alone     lift   verdict
+  <span class="hit">PUBCOV public_coverage_flag    0.7012  +0.0529  fires</span>
+  HINS4 medicaid_coverage_flag    0.6638  +0.0365  fires
+  SSIP  supplementary_security_..  0.5894  +0.0243  fires
+  HINS3 medicare_coverage_flag    0.5940  +0.0230  fires
+  VEH   vehicles_available        0.6219  +0.0107  <span class="dim">silent</span>
+
+  4 of 5 moved it by more than 0.0200
+  1 did not, and stays as refuted rather than deleted</code></pre>
+  </div>
+</section>
+
+<!-- ============ FOUR REGIMES ============ -->
+<section class="block" style="max-width:none">
+  <span class="label">the same warehouse, judged four ways</span>
+  <h2 style="font-size:clamp(24px,3.2vw,38px)">One column, four answers, each citing its provision</h2>
+  <p class="lede" style="max-width:72ch">
+    Which columns count as restricted is declared in a policy pack, not written into the checks.
+    Packs name attributes rather than columns, so a pack moves to a different warehouse
+    unchanged. The disagreement between them is the point.
+  </p>
+  <div class="table-scroll">
+    <table style="min-width:720px">
+      <thead><tr><th>column</th><th>canada</th><th>ecoa</th><th>employment_us</th><th>eu_ai_act</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>age</code></td>
+          <td><b>prohibited</b></td><td>conditional</td><td><b>prohibited</b></td><td>examine</td>
+        </tr>
+        <tr>
+          <td><code>marital_status_code</code></td>
+          <td><b>prohibited</b></td><td><b>prohibited</b></td><td>examine</td><td>examine</td>
+        </tr>
+        <tr>
+          <td><code>public_coverage_flag</code></td>
+          <td>nothing to report</td><td>nothing to report</td><td>nothing to report</td><td><b>examine</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="max-width:72ch;margin-top:22px">
+    Three of the four are correct to stay quiet about the coverage flag: insurance coverage
+    genuinely is not a protected characteristic in US employment law. The difference between
+    silence and a finding is a line of YAML, not a code change.
+  </p>
+  <p class="lede" style="max-width:72ch">
+    <b>On timing.</b> ECOA, Title VII with the ADEA and ADA, and the Canadian Human Rights Act
+    are in force today. The EU AI Act pack describes an obligation that is coming rather than
+    one that binds: the Digital Omnibus approved on 29 June 2026 moved standalone Annex III
+    high risk duties to 2 December 2027. What the Articles ask for did not change, only when.
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/EU_AI_ACT.md">The full mapping</a>.
+  </p>
+</section>
+
+<section class="band">
+  <div class="inner">
+    <p class="quote">Every figure on this page was produced by a command, and the command is in the repository.</p>
+    <div class="ctas">
+      <a class="cta primary" href="/demo">Watch it run live</a>
+      <a class="cta" href="/run">The run, unedited</a>
+      <a class="cta" href="https://github.com/cnpierrepapi/ariadne">Read the source</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne">github.com/cnpierrepapi/ariadne</a>
+    <a href="https://datahub.onenept.com">the live DataHub instance</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/litepaper/Ariadne-litepaper.pdf">the litepaper, 11 pages</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/EU_AI_ACT.md">EU AI Act mapping</a>
+  </div>
+</footer>
+
+</body>
+</html>

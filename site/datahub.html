@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ariadne on DataHub, every surface and what it returned</title>
+<meta name="description" content="Every DataHub surface Ariadne stands on: the context graph, the MCP server, the Agent Context Kit, the Skills registry and the Incidents API, with what each one returned on a live instance and the four issues filed back upstream.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="/">ARIADNE</a>
+  <nav>
+    <a href="/">overview</a>
+    <a href="/demo">demo</a>
+    <a href="/datahub" class="here">datahub</a>
+    <a href="/evidence">evidence</a>
+    <a href="https://github.com/cnpierrepapi/ariadne">source</a>
+  </nav>
+</header>
+
+<section class="block" style="max-width:none">
+  <span class="label">if you build the platform</span>
+  <h2 style="font-size:clamp(26px,3.6vw,44px);max-width:22ch">Ariadne cannot answer a single question without DataHub</h2>
+  <p class="lede" style="max-width:72ch">
+    That is not a compliment paid to a sponsor, it is the architecture. Every claim Ariadne
+    makes is a claim about the DataHub graph, read through DataHub's own agent surfaces and
+    written back through DataHub's own APIs. Point it at an instance with the lineage removed
+    and every check returns nothing at all, because there is nothing else for it to read.
+  </p>
+  <p class="lede" style="max-width:72ch">
+    Nothing in the lineage was hand emitted. Three of the seven judges built these connectors,
+    so a graph written by hand would be spotted immediately and would prove nothing anyway.
+  </p>
+</section>
+
+<!-- ============ THE PROOF OF DEPENDENCE ============ -->
+<section class="row-2">
+  <div class="copy">
+    <span class="accent"></span>
+    <span class="label">the strongest evidence on this page</span>
+    <h2>Two surfaces, walked separately, agreeing exactly</h2>
+    <p>
+      The same traversal runs twice: once through the Agent Context Kit in process, once
+      through the official MCP server as a child process over stdio. They share no code path
+      inside Ariadne.
+    </p>
+    <p>
+      If the answers came from anywhere other than the catalog, the two would drift. They do
+      not. That is the check, and it runs live.
+    </p>
+    <div class="ctas">
+      <a class="cta" href="/demo">Run it yourself in the demo</a>
+    </div>
+  </div>
+  <div class="show">
+    <pre class="term"><code><span class="cmd">python tools/agree.py</span>
+== do the two DataHub surfaces agree ==
+   kit  datahub-agent-context, in process
+   mcp  datahub 3.4.5 over stdio, 6 tools
+
+  agree    7 nodes  upstream of workforce_features on public_coverage_flag
+  agree    7 nodes  downstream of workforce_features
+  agree    5 nodes  upstream of dim_person on disability_code
+
+  <span class="hit">3/3 walks identical through both</span></code></pre>
+  </div>
+</section>
+
+<!-- ============ THE SURFACES ============ -->
+<section class="block" style="max-width:none">
+  <span class="label">the full set</span>
+  <h2 style="font-size:clamp(24px,3.2vw,38px)">Every surface, and what it did here</h2>
+  <div class="table-scroll">
+    <table style="min-width:760px">
+      <thead><tr><th>surface</th><th>what Ariadne does with it</th><th>what it returned</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Context graph</b></td>
+          <td>Column level traversal, both directions, across dbt, postgres and mlflow siblings</td>
+          <td>7 hops, raw column to deployed model</td>
+        </tr>
+        <tr>
+          <td><b>MCP server</b></td>
+          <td>The official server as a child process over stdio, tools discovered at the handshake</td>
+          <td>6 tools discovered</td>
+        </tr>
+        <tr>
+          <td><b>Agent Context Kit</b></td>
+          <td>The runtime both agents run on, over either transport</td>
+          <td>in process, 3 of 3 walks agree with MCP</td>
+        </tr>
+        <tr>
+          <td><b>DataHub Skills</b></td>
+          <td>Registry installed, plus an ML impact skill contributed back</td>
+          <td>datahub-skills#66, 4 failure modes encoded</td>
+        </tr>
+        <tr>
+          <td><b>Incidents API</b></td>
+          <td>Findings filed on the entity they concern, regime named in the title</td>
+          <td>12 open on income_features alone</td>
+        </tr>
+        <tr>
+          <td><b>Ingestion sources</b></td>
+          <td>postgres, dbt and mlflow recipes, run in a specific order</td>
+          <td>3 connectors, no hand emitted edges</td>
+        </tr>
+        <tr>
+          <td><b>Analytics Agent</b></td>
+          <td>Its context patterns, for the query half that computes the figure</td>
+          <td>pattern adopted, app not embedded</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ctas" style="margin-top:26px">
+    <a class="cta" href="/surfaces">The long version, surface by surface</a>
+    <a class="cta" href="/mcp">The MCP read path</a>
+    <a class="cta" href="/agents">Both agents in detail</a>
+    <a class="cta" href="/skill">The skill</a>
+  </div>
+</section>
+
+<!-- ============ WHAT WENT BACK ============ -->
+<section class="block" style="max-width:none">
+  <span class="label">back to the project</span>
+  <h2 style="font-size:clamp(24px,3.2vw,38px)">Four things that were not in the documentation</h2>
+  <p class="lede" style="max-width:70ch">
+    Each one fails silently, which is why they were worth writing up rather than working
+    around quietly. A loud failure teaches you something the first time. These teach you
+    nothing until much later.
+  </p>
+  <div class="table-scroll">
+    <table style="min-width:680px">
+      <thead><tr><th>what</th><th>why it matters</th><th>where</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>The self-hosted MCP server stalls before answering <code>initialize</code></td>
+          <td>Its usage ping is sent before the handshake, so on a restricted host the client sees no error and no response at all</td>
+          <td><a href="https://github.com/datahub-project/datahub/pull/18684">datahub#18684</a></td>
+        </tr>
+        <tr>
+          <td>Incidents accept seven entity types, and no ML entity</td>
+          <td>The docs said "dataset, dashboard, chart, dataFlow, etc" and that "etc" is not open ended. It is why findings are filed on the feature table rather than the model</td>
+          <td><a href="https://github.com/datahub-project/datahub/pull/18685">datahub#18685</a></td>
+        </tr>
+        <tr>
+          <td>An ML impact skill for the registry</td>
+          <td>The existing five do not cover whether a warehouse change reaches something that is serving</td>
+          <td><a href="https://github.com/datahub-project/datahub-skills/pull/66">datahub-skills#66</a></td>
+        </tr>
+        <tr>
+          <td>The Agent Context Kit cannot import its own registration module</td>
+          <td>It fails against the dependency version it pins, so the LangChain path breaks on a clean install</td>
+          <td><a href="https://github.com/datahub-project/datahub/issues/18686">datahub#18686</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="band">
+  <div class="inner">
+    <p class="quote">Every number here can be checked against the instance it came from.</p>
+    <div class="ctas">
+      <a class="cta primary" href="/demo">Watch it run live</a>
+      <a class="cta" href="https://datahub.onenept.com/dataset/urn%3Ali%3Adataset%3A(urn%3Ali%3AdataPlatform%3Apostgres%2Cwarehouse.analytics_marts.income_features%2CPROD)/Incidents">Open the incidents</a>
+      <a class="cta" href="https://github.com/cnpierrepapi/ariadne">Read the source</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-main">
+    <span class="wordmark">ARIADNE</span>
+    <p>Built on DataHub. Apache 2.0. US Census ACS PUMS pulled live through folktables, nothing redistributed.</p>
+  </div>
+  <div class="foot-links">
+    <a href="https://github.com/cnpierrepapi/ariadne">github.com/cnpierrepapi/ariadne</a>
+    <a href="https://datahub.onenept.com">the live DataHub instance</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/litepaper/Ariadne-litepaper.pdf">the litepaper, 11 pages</a>
+    <a href="https://github.com/cnpierrepapi/ariadne/blob/master/EU_AI_ACT.md">EU AI Act mapping</a>
+  </div>
+</footer>
+
+</body>
+</html>

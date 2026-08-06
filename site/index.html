@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ariadne, which data change moved the model</title>
-<meta name="description" content="Ariadne finds the data change behind a production model's behaviour, and files it back into DataHub as an incident. Built on the DataHub context graph, MCP server and Agent Context Kit.">
+<title>Ariadne, know what got into your model</title>
+<meta name="description" content="Ariadne reads your DataHub lineage, names the column that reached a deployed model, and files it back into the catalog as an incident. Built on the DataHub context graph, MCP server and Agent Context Kit.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,46 +15,63 @@
 <header class="topbar">
   <a class="wordmark" href="/">ARIADNE</a>
   <nav>
-    <a href="/" class="here">overview</a>
+    <a href="/">overview</a>
     <a href="/demo">demo</a>
-    <a href="/surfaces">surfaces</a>
-    <a href="/mcp">mcp</a>
-    <a href="/agents">agents</a>
-    <a href="/skill">skill</a>
-    <a href="/run">the run</a>
-    <a href="/register">register</a>
+    <a href="/datahub">datahub</a>
+    <a href="/evidence">evidence</a>
     <a href="https://github.com/cnpierrepapi/ariadne">source</a>
   </nav>
 </header>
 
-<!-- ============ HERO, asymmetric ============ -->
-<section class="hero">
-  <div>
-    <span class="label">lineage-grounded root cause for production ML</span>
-    <h1>Which data change<br>moved the model?</h1>
-    <p class="stand">
-      Model monitoring tells you a model's behaviour changed. It cannot tell you why, because
-      it has never been told your warehouse exists. Ariadne answers the next question:
-      <b>which column, which file, which commit, how many hops away</b>. It stands on the
-      DataHub lineage graph and writes what it finds back into DataHub as an incident.
-    </p>
-    <div class="ctas">
-      <a class="cta primary" href="/demo">Try the demo</a>
-      <a class="cta" href="/run">Watch the run, start to finish</a>
+<!-- ============ HERO, built around the catalog itself ============ -->
+<section class="shot-hero">
+  <div class="in">
+    <div class="say">
+      <span class="label">lineage-grounded root cause for production ML</span>
+      <h1>Know what got<br><em>into your model.</em></h1>
+
+      <p class="says">
+        Data reaches a model through a chain nobody can see end to end. Ariadne reads
+        that chain in DataHub, names what got in, and files it back into the catalog.
+      </p>
+      <p class="sub">
+        Here it caught race reaching a live credit model. No metric moved the wrong way.
+        Accuracy went up.
+      </p>
+
+      <div class="ctas" style="margin-top:22px">
+        <a class="cta primary" href="/demo">Watch it run live</a>
+        <a class="cta" href="https://datahub.onenept.com/dataset/urn%3Ali%3Adataset%3A(urn%3Ali%3AdataPlatform%3Apostgres%2Cwarehouse.analytics_marts.income_features%2CPROD)/Incidents">Open these incidents</a>
+      </div>
+
+      <p class="verdict">
+        <b>filed by ariadne, not by hand</b>
+        <span>One column, open twice, because two statutes disagree about it.</span>
+      </p>
+    </div>
+
+    <div class="frame">
+      <div class="bar">
+        <i></i><i></i><i></i>
+        <span>datahub.onenept.com &nbsp;/&nbsp; income_features &nbsp;/&nbsp; incidents</span>
+      </div>
+      <img src="/img/incidents.png"
+           alt="The DataHub incidents view for income_features, showing five critical and seven high incidents filed by Ariadne, including race_code reaching income-classifier_3 under both the Canadian Human Rights Act and ECOA">
+      <span class="pin a">same column, Canadian Human Rights Act</span>
+      <span class="pin b">same column, ECOA, different severity</span>
     </div>
   </div>
+</section>
 
-  <aside class="panel">
-    <div class="head"><span>live right now</span><span class="dot"></span></div>
-    <div class="row"><span>DataHub instance</span><b>v1.5.0.6</b></div>
-    <div class="row"><span>Incidents raised by Ariadne</span><b>18 active</b></div>
-    <div class="row"><span>Lineage, ingested not written</span><b>3 connectors</b></div>
-    <div class="row"><span>Deepest column walk</span><b>7 hops</b></div>
-    <div class="row"><span>MCP tools discovered</span><b>6</b></div>
-    <div class="row"><span>Read paths in agreement</span><b>3 of 3</b></div>
-    <a class="go" href="https://datahub.onenept.com">open the DataHub UI and look for yourself &rarr;</a>
-    <p class="creds">sign in with datahub / datahub</p>
-  </aside>
+<section class="strip">
+  <div class="in">
+    <div class="f"><b data-live="findings">5</b><span>findings open</span></div>
+    <div class="f"><b data-live="models">2</b><span>models watched</span></div>
+    <div class="f"><b data-live="tools">6</b><span>mcp tools</span></div>
+    <div class="f"><b data-live="agree">3/3</b><span>read paths agree</span></div>
+    <div class="f"><b>7</b><span>hops, connector ingested</span></div>
+    <div class="state" data-live="state">last recorded</div>
+  </div>
 </section>
 
 <!-- ============ FULL BLEED BAND ============ -->
@@ -372,5 +389,6 @@ income_features       <span class="hit">12 active</span>
   </div>
 </footer>
 
+<script src="/live.js"></script>
 </body>
 </html>
